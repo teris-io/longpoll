@@ -1,162 +1,145 @@
 package longpoll
 
 import (
-	"errors"
 	"github.com/satori/go.uuid"
-	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
-)
-
-const (
-	no int32 = iota
-	yes
 )
 
 type Subscription struct {
 	mx       sync.Mutex
 	id       string
 	polltime time.Duration
+	onClose  func(id string)
 	topics   map[string]bool
 	data     []*interface{}
-	cmd      chan interface{}
 	alive    int32
-	newdata  chan bool
+	notif    *getnotifier
+	tor      *Timeout
+}
+
+type getnotifier struct {
+	ping   chan bool
+	pinged bool
 }
 
 func NewSubscription(timeout time.Duration, polltime time.Duration, onClose func(id string), topics ...string) *Subscription {
-	topicmap := make(map[string]bool)
-	for _, topic := range topics {
-		topicmap[topic] = true
-	}
-	sub := Subscription{
+	sub := &Subscription{
 		id:       uuid.NewV4().String(),
 		polltime: polltime,
-		topics:   topicmap,
-		cmd:      make(chan interface{}, 100),
-		alive:    yes,
-		newdata:  nil,
+		onClose:  onClose,
+		topics:   make(map[string]bool),
+		alive:    YES,
+		notif:    nil,
 	}
-	go sub.start(timeout, onClose)
-	return &sub
+	for _, topic := range topics {
+		sub.topics[topic] = true
+	}
+	sub.tor = NewTimeout(timeout, sub.Drop)
+	return sub
 }
 
-type pubinfo struct {
-	data  *interface{}
-	topic string
-}
-
+// Publish appends supplied data to the internal storage of the subscription
+// channel if the topic is one of subscribed to and the channel is alive.
 func (sub *Subscription) Publish(data *interface{}, topic string) {
-	if sub.IsAlive() {
-		// never block publishing
-		go func() {
-			sub.cmd <- pubinfo{data: data, topic: topic}
-		}()
+	if !sub.IsAlive() {
+		return
 	}
-}
+	if _, ok := sub.topics[topic]; !ok {
+		return
+	}
+	go func() {
+		sub.mx.Lock()
+		defer sub.mx.Unlock()
 
-type getinfo struct {
-	resp     chan []*interface{}
-	polltime time.Duration
-}
-
-func (sub *Subscription) Get() ([]*interface{}, error) {
-	if sub.IsAlive() {
-		// allow the data supplier exit even if we cannot get it
-		ch := make(chan []*interface{}, 1)
-		// block here shortly if required
-		sub.cmd <- getinfo{resp: ch, polltime: sub.polltime}
-		// block here until data or timeout signalled
-		res, ok := <-ch
-		if ok {
-			return res, nil
+		sub.data = append(sub.data, data)
+		if sub.notif != nil && !sub.notif.pinged {
+			sub.notif.ping <- true
+			sub.notif.pinged = true
 		}
+	}()
+}
+
+func (sub *Subscription) Get() chan []*interface{} {
+	resp := make(chan []*interface{}, 1)
+	if !sub.IsAlive() {
+		resp <- nil
+		return resp
 	}
-	return nil, errors.New("subscription is closed")
+	go func() {
+		sub.tor.Ping()
+
+		sub.mx.Lock()
+
+		// earlier "get" won't be notified any longer
+		sub.notif = nil
+
+		if len(sub.data) > 0 {
+			resp <- sub.data
+			sub.data = nil
+
+			sub.mx.Unlock()
+			return
+		}
+
+		notif := &getnotifier{ping: make(chan bool, 1), pinged: false}
+		sub.notif = notif
+
+		sub.mx.Unlock()
+
+		pollend := make(chan bool, 1)
+		go func() {
+			time.Sleep(sub.polltime)
+			pollend <- true
+		}()
+
+		// TODO need an infinite loop here?
+
+		select {
+		case <-notif.ping:
+			sub.mx.Lock()
+			resp <- sub.data
+			sub.data = nil
+			if sub.notif == notif {
+				sub.notif = nil
+			}
+			sub.mx.Unlock()
+
+		case <-pollend:
+			sub.mx.Lock()
+			resp <- nil
+			if sub.notif == notif {
+				sub.notif = nil
+			}
+			sub.mx.Unlock()
+		}
+	}()
+	return resp
 }
 
 func (sub *Subscription) IsAlive() bool {
-	return atomic.LoadInt32(&sub.alive) == yes
+	return atomic.LoadInt32(&sub.alive) == YES
 }
 
 func (sub *Subscription) Drop() {
-	if sub.IsAlive() {
-		// never block here
-		go func() {
-			sub.cmd <- true
-		}()
+	if !sub.IsAlive() {
+		return
 	}
-}
+	atomic.StoreInt32(&sub.alive, NO)
+	go func() {
+		sub.tor.Drop()
 
-func (sub *Subscription) start(timeout time.Duration, onClose func(id string)) {
-	tor := NewTimeout(timeout)
-
-CommandLoop:
-	for {
-		select {
-		case <-tor.ReportChan():
-			break CommandLoop
-
-		case cmd, ok := <-sub.cmd:
-			if !ok {
-				break CommandLoop
-			}
-			switch cmd.(type) {
-			case pubinfo:
-				pinfo, _ := cmd.(pubinfo)
-				go sub.pub(&pinfo)
-
-			case getinfo:
-				tor.Ping()
-				ginfo, _ := cmd.(getinfo)
-				go sub.get(&ginfo)
-
-			case bool:
-				break CommandLoop
-
-			default:
-				panic("unexpected information passed to sub cmd")
-			}
-
-		}
-	}
-
-	atomic.StoreInt32(&sub.alive, no)
-
-	tor.Drop()
-	if onClose != nil {
-		go onClose(sub.id)
-	}
-}
-
-func (sub *Subscription) pub(pinfo *pubinfo) {
-	if _, ok := sub.topics[pinfo.topic]; ok {
 		sub.mx.Lock()
-		sub.data = append(sub.data, pinfo.data)
-		sub.mx.Unlock()
-	}
-}
+		defer sub.mx.Unlock()
 
-// TODO find a way to
-func (sub *Subscription) get(ginfo *getinfo) {
-	var res []*interface{}
-	start := time.Now()
-
-	// FIXME will this endless loop cause CPU usage?
-	for time.Now().Sub(start) < ginfo.polltime && sub.IsAlive() {
-		if len(sub.data) > 0 {
-			sub.mx.Lock()
-			res = sub.data
-			sub.data = nil
-			sub.mx.Unlock()
-			// earlier check outside of the lock, so we could potentially take over empty results
-			if len(res) > 0 {
-				break
-			}
-		} else {
-			runtime.Gosched()
+		sub.data = nil
+		if sub.notif != nil && !sub.notif.pinged {
+			sub.notif.ping <- true
 		}
-	}
-	ginfo.resp <- res
+		sub.notif = nil
+		if sub.onClose != nil {
+			sub.onClose(sub.id)
+		}
+	}()
 }

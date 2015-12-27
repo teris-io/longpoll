@@ -46,12 +46,12 @@ func (lp *LongPoll) Subscribe(topics ...string) string {
 	return sub.id
 }
 
-func (lp *LongPoll) Get(id string) ([]*interface{}, error) {
+func (lp *LongPoll) Get(id string) (chan []*interface{}, error) {
 	// do not lock
 	if sub, ok := lp.subs[id]; ok {
-		return sub.Get()
+		return sub.Get(), nil
 	} else {
-		return nil, errors.New("subscription is closed")
+		return nil, errors.New("incorrect subscription id")
 	}
 }
 

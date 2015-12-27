@@ -6,13 +6,17 @@ import (
 )
 
 type Timeout struct {
-	lastping int64
-	report   chan bool
+	lastping  int64
+	alive     int32
+	report    chan bool
+	onTimeout func()
 }
 
-func NewTimeout(timeout time.Duration) *Timeout {
+func NewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
 	tor := Timeout{
-		report: make(chan bool, 1),
+		alive:     YES,
+		report:    make(chan bool, 1),
+		onTimeout: onTimeout,
 	}
 	tor.Ping()
 	go tor.start(int64(timeout))
@@ -20,7 +24,9 @@ func NewTimeout(timeout time.Duration) *Timeout {
 }
 
 func (tor *Timeout) Ping() {
-	atomic.StoreInt64(&tor.lastping, tor.now())
+	if tor.IsAlive() {
+		atomic.StoreInt64(&tor.lastping, tor.now())
+	}
 }
 
 func (tor *Timeout) ReportChan() chan bool {
@@ -28,14 +34,22 @@ func (tor *Timeout) ReportChan() chan bool {
 }
 
 func (tor *Timeout) Drop() {
-	atomic.StoreInt64(&tor.lastping, 0)
+	atomic.StoreInt32(&tor.alive, NO)
 }
 
 func (tor *Timeout) start(timeout int64) {
-	for tor.elapsed() < timeout {
+	for tor.elapsed() < timeout && tor.IsAlive() {
 		time.Sleep(1)
 	}
 	tor.report <- true
+	if tor.IsAlive() && tor.onTimeout != nil {
+		go tor.onTimeout()
+	}
+	tor.Drop()
+}
+
+func (tor *Timeout) IsAlive() bool {
+	return atomic.LoadInt32(&tor.alive) == YES
 }
 
 func (tor *Timeout) elapsed() int64 {
