@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file
 
-package lpoll
+package longpoll
 
 import (
 	"github.com/satori/go.uuid"
@@ -211,10 +211,14 @@ func (sub *Sub) onLongpollTimeoutLocking(resp chan []interface{}, notif *getnoti
 	}
 }
 
+// IsAlive tests if the subscription is up and running.
 func (sub *Sub) IsAlive() bool {
 	return atomic.LoadInt32(&sub.alive) == yes
 }
 
+// Drop terminates the subscription and removes the topics (nothing can
+// then be published), signals the currently waiting Get request to return
+// empty, terminates the timeout timer and runs the exit handler if supplied.
 func (sub *Sub) Drop() {
 	if !sub.IsAlive() {
 		return
@@ -246,10 +250,13 @@ func (sub *Sub) Drop() {
 	}()
 }
 
+// Id returns the subscription Id assigned at construction.
 func (sub *Sub) Id() string {
 	return sub.id
 }
 
+// Topics return the current list of topics (fixed unless Drop
+// is called, which resets topics to an empty list).
 func (sub *Sub) Topics() []string {
 	// do not synchronise, value only changes on drop
 	var res []string
@@ -259,12 +266,16 @@ func (sub *Sub) Topics() []string {
 	return res
 }
 
+// QueueSize reports a snapshot of the size of the currently waiting
+// data queue (which is only not empty if no Get request waiting).
 func (sub *Sub) QueueSize() int {
 	// do not synchronise
 	return len(sub.data)
 }
 
-func (sub *Sub) GetWaiting() bool {
+// IsGetWaiting reports if there is a Get request waiting for data. The
+// result may be nondeterministic during continuous publishing.
+func (sub *Sub) IsGetWaiting() bool {
 	// do not synchronise
 	return sub.notif != nil
 }

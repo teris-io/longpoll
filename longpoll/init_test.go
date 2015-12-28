@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file
 
-package lpoll_test
+package longpoll_test
 
 import (
 	"github.com/op/go-logging"

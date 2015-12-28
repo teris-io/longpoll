@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
-	"ventu.tech/ventu-io/pubsub/lpoll"
+	"ventu.tech/ventu-io/pubsub/longpoll"
 )
 
 const pubcount = 1e6
@@ -31,7 +31,7 @@ func TestSubThroughput_onConsequentGets_expectFewEmptyGetsAndLarge100kChunks(t *
 	var received int32 = 0
 	start := time.Now()
 
-	sub := lpoll.NewSub(timeout, nil, "A")
+	sub := longpoll.NewSub(timeout, nil, "A")
 	defer sub.Drop()
 
 	var mx sync.Mutex
@@ -62,7 +62,7 @@ func TestSubThroughput_onConcurrentGets_expectEmptyGetsAndSmaller10kChunks(t *te
 	var received int32 = 0
 	start := time.Now()
 
-	sub := lpoll.NewSub(timeout, nil, "A")
+	sub := longpoll.NewSub(timeout, nil, "A")
 	defer sub.Drop()
 
 	var mx sync.Mutex
@@ -79,7 +79,7 @@ func TestSubThroughput_onConcurrentGets_expectEmptyGetsAndSmaller10kChunks(t *te
 	}
 }
 
-func startget(sub *lpoll.Sub, mx sync.Mutex, polltime time.Duration, subdone chan bool, gethist map[int]int, received *int32) {
+func startget(sub *longpoll.Sub, mx sync.Mutex, polltime time.Duration, subdone chan bool, gethist map[int]int, received *int32) {
 
 	for {
 		gotsofar := atomic.LoadInt32(received)
@@ -101,7 +101,7 @@ func startget(sub *lpoll.Sub, mx sync.Mutex, polltime time.Duration, subdone cha
 	subdone <- true
 }
 
-func startpub(sub *lpoll.Sub, pubdone chan bool) {
+func startpub(sub *longpoll.Sub, pubdone chan bool) {
 	pubdata := struct {
 		value int
 	}{

@@ -1,4 +1,4 @@
-package lpoll
+package longpoll
 
 import (
 	"github.com/op/go-logging"

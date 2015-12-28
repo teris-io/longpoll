@@ -7,5 +7,5 @@ build:
 	@go fmt ./...
 	@echo ${APP}::test
 	@go test -cover ./...
-	@echo ${APP}::build lpoll
-	@go build ./lpoll
+	@echo ${APP}::build longpoll
+	@go build ./longpoll
