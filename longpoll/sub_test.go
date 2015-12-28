@@ -8,7 +8,7 @@ import (
 	"sort"
 	"testing"
 	"time"
-	"ventu.tech/ventu-io/pubsub/longpoll"
+	"ventu.tech/ventu-io/go-pubsub/longpoll"
 )
 
 func TestSub_onNoAction_SubExpiresOnTimeout(t *testing.T) {

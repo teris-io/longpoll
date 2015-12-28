@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
-	"ventu.tech/ventu-io/pubsub/longpoll"
+	"ventu.tech/ventu-io/go-pubsub/longpoll"
 )
 
 const pubcount = 1e6
