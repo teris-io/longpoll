@@ -2,12 +2,12 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file
 
-package longpoll_test
+package lpoll_test
 
 import (
 	"testing"
 	"time"
-	lp "ventu.tech/ventu-io/longpoll"
+	"ventu.tech/ventu-io/pubsub/lpoll"
 )
 
 func TestTimeout_onNoPing_expires(t *testing.T) {
@@ -16,7 +16,7 @@ func TestTimeout_onNoPing_expires(t *testing.T) {
 
 	start := time.Now()
 	var end time.Time
-	tor := lp.NewTimeout(timeout, func() {
+	tor := lpoll.NewTimeout(timeout, func() {
 		end = time.Now()
 	})
 	if !tor.IsAlive() {
@@ -40,7 +40,7 @@ func TestTimeout_onPing_extends(t *testing.T) {
 
 	start := time.Now()
 	var end time.Time
-	tor := lp.NewTimeout(timeout, func() {
+	tor := lpoll.NewTimeout(timeout, func() {
 		end = time.Now()
 	})
 
@@ -70,7 +70,7 @@ func TestTimeout_onExpiry_callsHandler_andReportsOnChannel(t *testing.T) {
 	tolerance := 50 * time.Millisecond
 
 	failed := true
-	tor := lp.NewTimeout(timeout, func() {
+	tor := lpoll.NewTimeout(timeout, func() {
 		failed = false
 	})
 	time.Sleep(timeout + tolerance)
@@ -88,7 +88,7 @@ func TestTimeout_onNoHandler_reportsOnChannelOnExpiry(t *testing.T) {
 	timeout := 200 * time.Millisecond
 	tolerance := 50 * time.Millisecond
 
-	tor := lp.NewTimeout(timeout, nil)
+	tor := lpoll.NewTimeout(timeout, nil)
 	if !tor.IsAlive() {
 		t.Errorf("tor not alive on start")
 	}
@@ -108,7 +108,7 @@ func TestTimeout_onDrop_skipsHandler_butReportsOnChannel(t *testing.T) {
 	tolerance := 50 * time.Millisecond
 
 	failed := false
-	tor := lp.NewTimeout(timeout, func() {
+	tor := lpoll.NewTimeout(timeout, func() {
 		failed = true
 	})
 	if !tor.IsAlive() {

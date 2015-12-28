@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file
 
-package longpoll
+package lpoll
 
 import (
 	"errors"
@@ -10,22 +10,22 @@ import (
 	"time"
 )
 
-type LongPoll struct {
+type LPoll struct {
 	mx       sync.Mutex
 	timeout  time.Duration
 	polltime time.Duration
 	subs     map[string]*Sub
 }
 
-func New(timeout time.Duration, polltime time.Duration) *LongPoll {
-	return &LongPoll{
+func New(timeout time.Duration, polltime time.Duration) *LPoll {
+	return &LPoll{
 		subs:     make(map[string]*Sub),
 		timeout:  timeout,
 		polltime: polltime,
 	}
 }
 
-func (lp *LongPoll) Publish(data interface{}, topics ...string) {
+func (lp *LPoll) Publish(data interface{}, topics ...string) {
 	// lock for iterating over map
 	lp.mx.Lock()
 	defer lp.mx.Unlock()
@@ -36,7 +36,7 @@ func (lp *LongPoll) Publish(data interface{}, topics ...string) {
 	}
 }
 
-func (lp *LongPoll) Subscribe(topics ...string) string {
+func (lp *LPoll) Subscribe(topics ...string) string {
 	sub := NewSub(lp.timeout, lp.polltime, func(id string) {
 		// lock for deletion
 		lp.mx.Lock()
@@ -50,7 +50,7 @@ func (lp *LongPoll) Subscribe(topics ...string) string {
 	return sub.id
 }
 
-func (lp *LongPoll) Get(id string) (chan []interface{}, error) {
+func (lp *LPoll) Get(id string) (chan []interface{}, error) {
 	// do not lock
 	if sub, ok := lp.subs[id]; ok {
 		return sub.Get(), nil
@@ -59,7 +59,7 @@ func (lp *LongPoll) Get(id string) (chan []interface{}, error) {
 	}
 }
 
-func (lp *LongPoll) Drop(id string) {
+func (lp *LPoll) Drop(id string) {
 	if sub, ok := lp.subs[id]; ok {
 		go sub.Drop()
 		// lock for deletion
@@ -69,7 +69,7 @@ func (lp *LongPoll) Drop(id string) {
 	}
 }
 
-func (lp *LongPoll) Shutdown() {
+func (lp *LPoll) Shutdown() {
 	// lock for iterating over map
 	lp.mx.Lock()
 	defer lp.mx.Unlock()
@@ -79,7 +79,7 @@ func (lp *LongPoll) Shutdown() {
 	}
 }
 
-func (lp *LongPoll) List() []string {
+func (lp *LPoll) List() []string {
 	// lock for iterating over map
 	lp.mx.Lock()
 	defer lp.mx.Unlock()
@@ -90,7 +90,7 @@ func (lp *LongPoll) List() []string {
 	return res
 }
 
-func (lp *LongPoll) Topics() []string {
+func (lp *LPoll) Topics() []string {
 	topics := make(map[string]bool)
 	// lock for iterating over map
 	lp.mx.Lock()
