@@ -1,3 +1,7 @@
+// Copyright 2015 Ventu.io. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file
+
 package longpoll
 
 import (
@@ -30,12 +34,13 @@ func NewSubscription(timeout time.Duration, polltime time.Duration, onClose func
 		polltime: polltime,
 		onClose:  onClose,
 		topics:   make(map[string]bool),
-		alive:    YES,
+		alive:    yes,
 		notif:    nil,
 	}
 	for _, topic := range topics {
 		sub.topics[topic] = true
 	}
+	log.Debug("new Subscription")
 	sub.tor = NewTimeout(timeout, sub.Drop)
 	return sub
 }
@@ -119,14 +124,14 @@ func (sub *Subscription) Get() chan []*interface{} {
 }
 
 func (sub *Subscription) IsAlive() bool {
-	return atomic.LoadInt32(&sub.alive) == YES
+	return atomic.LoadInt32(&sub.alive) == yes
 }
 
 func (sub *Subscription) Drop() {
 	if !sub.IsAlive() {
 		return
 	}
-	atomic.StoreInt32(&sub.alive, NO)
+	atomic.StoreInt32(&sub.alive, no)
 	go func() {
 		sub.tor.Drop()
 

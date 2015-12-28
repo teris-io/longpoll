@@ -1,6 +1,12 @@
 package longpoll
 
+import (
+	"github.com/op/go-logging"
+)
+
+var log = logging.MustGetLogger("longpoll")
+
 const (
-	NO int32 = iota
-	YES
+	no int32 = iota
+	yes
 )

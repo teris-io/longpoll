@@ -1,3 +1,7 @@
+// Copyright 2015 Ventu.io. All rights reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file
+
 package longpoll
 
 import (
@@ -5,6 +9,15 @@ import (
 	"time"
 )
 
+// Timeout implements a callback mechanism on timeout (along with
+// reporting on a buffered channel), which is extendable in time via
+// pinging the object. An alive timeout can be dropped at any time,
+// in which case the callback will not be executed, but the exit
+// will still be reported on the channel.
+//
+// This extendable Timeout is used for monitoring long polling
+// subscriptions here, which would expire if no client asks for data
+// within a defined timeout (or timeout extended otherwise).
 type Timeout struct {
 	lastping  int64
 	alive     int32
@@ -12,15 +25,18 @@ type Timeout struct {
 	onTimeout func()
 }
 
+// NewTimeout creates and starts a new timeout handler accepting the
+// duration of
 func NewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
-	tor := Timeout{
-		alive:     YES,
+	log.Debug("new Timeout(%v, %v)", timeout, onTimeout)
+	tor := &Timeout{
+		alive:     yes,
 		report:    make(chan bool, 1),
 		onTimeout: onTimeout,
 	}
 	tor.Ping()
-	go tor.start(int64(timeout))
-	return &tor
+	go tor.handle(int64(timeout))
+	return tor
 }
 
 func (tor *Timeout) Ping() {
@@ -34,22 +50,29 @@ func (tor *Timeout) ReportChan() chan bool {
 }
 
 func (tor *Timeout) Drop() {
-	atomic.StoreInt32(&tor.alive, NO)
+	atomic.StoreInt32(&tor.alive, no)
 }
 
-func (tor *Timeout) start(timeout int64) {
+func (tor *Timeout) handle(timeout int64) {
+	log.Debug("handler started")
+	hundredth := timeout / 100
 	for tor.elapsed() < timeout && tor.IsAlive() {
-		time.Sleep(1)
+		time.Sleep(time.Duration(hundredth))
 	}
+	if tor.IsAlive() {
+		log.Notice("timeout detected")
+		tor.Drop()
+		if tor.onTimeout != nil {
+			log.Debug("calling onTimeout handler")
+			go tor.onTimeout()
+		}
+	}
+	log.Debug("reporting exit on channel")
 	tor.report <- true
-	if tor.IsAlive() && tor.onTimeout != nil {
-		go tor.onTimeout()
-	}
-	tor.Drop()
 }
 
 func (tor *Timeout) IsAlive() bool {
-	return atomic.LoadInt32(&tor.alive) == YES
+	return atomic.LoadInt32(&tor.alive) == yes
 }
 
 func (tor *Timeout) elapsed() int64 {
