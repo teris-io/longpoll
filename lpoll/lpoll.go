@@ -11,17 +11,13 @@ import (
 )
 
 type LPoll struct {
-	mx       sync.Mutex
-	timeout  time.Duration
-	polltime time.Duration
-	subs     map[string]*Sub
+	mx   sync.Mutex
+	subs map[string]*Sub
 }
 
-func New(timeout time.Duration, polltime time.Duration) *LPoll {
+func New() *LPoll {
 	return &LPoll{
-		subs:     make(map[string]*Sub),
-		timeout:  timeout,
-		polltime: polltime,
+		subs: make(map[string]*Sub),
 	}
 }
 
@@ -36,8 +32,8 @@ func (lp *LPoll) Publish(data interface{}, topics ...string) {
 	}
 }
 
-func (lp *LPoll) Subscribe(topics ...string) string {
-	sub := NewSub(lp.timeout, lp.polltime, func(id string) {
+func (lp *LPoll) Subscribe(timeout time.Duration, topics ...string) string {
+	sub := NewSub(timeout, func(id string) {
 		// lock for deletion
 		lp.mx.Lock()
 		delete(lp.subs, id)
@@ -50,10 +46,10 @@ func (lp *LPoll) Subscribe(topics ...string) string {
 	return sub.id
 }
 
-func (lp *LPoll) Get(id string) (chan []interface{}, error) {
+func (lp *LPoll) Get(id string, polltime time.Duration) (chan []interface{}, error) {
 	// do not lock
 	if sub, ok := lp.subs[id]; ok {
-		return sub.Get(), nil
+		return sub.Get(polltime), nil
 	} else {
 		return nil, errors.New("incorrect subscription id")
 	}

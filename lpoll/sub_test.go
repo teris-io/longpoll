@@ -13,13 +13,12 @@ import (
 
 func TestSub_onNoAction_SubExpiresOnTimeout(t *testing.T) {
 	timeout := 400 * time.Millisecond
-	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
 	var end time.Time
 
-	sub := lpoll.NewSub(timeout, polltime, func(id string) {
+	sub := lpoll.NewSub(timeout, func(id string) {
 		end = time.Now()
 	}, "any")
 	defer sub.Drop()
@@ -47,11 +46,10 @@ func TestSub_onNoAction_SubExpiresOnTimeout(t *testing.T) {
 
 func TestSub_onTimeout_handlerCalledWithCorrectId(t *testing.T) {
 	timeout := 400 * time.Millisecond
-	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
 
 	var idx string
-	sub := lpoll.NewSub(timeout, polltime, func(id string) {
+	sub := lpoll.NewSub(timeout, func(id string) {
 		idx = id
 	}, "any")
 	defer sub.Drop()
@@ -64,10 +62,9 @@ func TestSub_onTimeout_handlerCalledWithCorrectId(t *testing.T) {
 
 func TestSub_onNoHandler_successOnTimeout(t *testing.T) {
 	timeout := 400 * time.Millisecond
-	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
 
-	sub := lpoll.NewSub(timeout, polltime, nil, "any")
+	sub := lpoll.NewSub(timeout, nil, "any")
 	defer sub.Drop()
 
 	time.Sleep(timeout - tolerance)
@@ -87,11 +84,11 @@ func TestSub_onNoPublish_GetExpires_andSubExpiresLater(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "any")
+	sub := lpoll.NewSub(timeout, nil, "any")
 	defer sub.Drop()
 
 	time.Sleep(polltime)
-	data := <-sub.Get()
+	data := <-sub.Get(polltime)
 
 	if time.Now().Sub(start) < polltime+polltime {
 		t.Errorf("get returned before polltime")
@@ -117,7 +114,7 @@ func TestSub_onDrop_givenGetWaiting_properCleanup(t *testing.T) {
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
 
-	sub := lpoll.NewSub(timeout, polltime, nil, "A", "B")
+	sub := lpoll.NewSub(timeout, nil, "A", "B")
 	if sub.QueueSize() != 0 {
 		t.Errorf("unexpected queue size")
 	}
@@ -130,7 +127,7 @@ func TestSub_onDrop_givenGetWaiting_properCleanup(t *testing.T) {
 		t.Errorf("unexpected get waiting")
 	}
 
-	datach := sub.Get()
+	datach := sub.Get(polltime)
 	time.Sleep(tolerance)
 
 	if !sub.GetWaiting() {
@@ -163,14 +160,14 @@ func TestSub_onPublishThenGetThenGet_Get1ComesBackImmediately_Get2Expires(t *tes
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "A")
+	sub := lpoll.NewSub(timeout, nil, "A")
 	defer sub.Drop()
 
 	outdata := pubdata{value: 351}
 
 	sub.Publish(&outdata, "A")
 	time.Sleep(tolerance)
-	data := <-sub.Get()
+	data := <-sub.Get(polltime)
 
 	if time.Now().Sub(start) > 2*tolerance {
 		t.Errorf("get returned late")
@@ -183,7 +180,7 @@ func TestSub_onPublishThenGetThenGet_Get1ComesBackImmediately_Get2Expires(t *tes
 	}
 
 	time.Sleep(polltime)
-	data = <-sub.Get()
+	data = <-sub.Get(polltime)
 	if time.Now().Sub(start) < 2*polltime+tolerance {
 		t.Errorf("get returned before polltime")
 	}
@@ -204,10 +201,10 @@ func TestSub_onGetThenPublish_GetComesBackUponPublish(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "A")
+	sub := lpoll.NewSub(timeout, nil, "A")
 	defer sub.Drop()
 
-	datach := sub.Get()
+	datach := sub.Get(polltime)
 	time.Sleep(polltime / 2)
 
 	outdata := pubdata{value: 351}
@@ -232,13 +229,13 @@ func TestSub_onGetThenGetThenPublish_Get1Expires_andGet2ComesWithData(t *testing
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "A")
+	sub := lpoll.NewSub(timeout, nil, "A")
 	defer sub.Drop()
 
-	datach1 := sub.Get()
+	datach1 := sub.Get(polltime)
 	time.Sleep(polltime / 2)
 
-	datach2 := sub.Get()
+	datach2 := sub.Get(polltime)
 	time.Sleep(polltime / 2)
 
 	data1 := <-datach1
@@ -275,7 +272,7 @@ func TestSub_onNxPublishThenGet_GetReceivesAll(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "A", "C")
+	sub := lpoll.NewSub(timeout, nil, "A", "C")
 	defer sub.Drop()
 
 	outdata1 := pubdata{value: 1}
@@ -295,7 +292,7 @@ func TestSub_onNxPublishThenGet_GetReceivesAll(t *testing.T) {
 	sub.Publish(&outdata4, "A")
 	time.Sleep(polltime / 5)
 
-	data := <-sub.Get()
+	data := <-sub.Get(polltime)
 
 	if time.Now().Sub(start) > 4*polltime/5+tolerance {
 		t.Errorf("get returned late")
@@ -314,10 +311,10 @@ func TestSub_onPublish_withAnyMatchingTopic_GetReceives(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "A", "B", "C", "D")
+	sub := lpoll.NewSub(timeout, nil, "A", "B", "C", "D")
 	defer sub.Drop()
 
-	datach := sub.Get()
+	datach := sub.Get(polltime)
 	time.Sleep(polltime / 2)
 
 	outdata := pubdata{value: 351}
@@ -344,10 +341,10 @@ func TestSub_onPublish_withNonmatchingTopic_GetIndifferent(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "A", "B", "C", "D")
+	sub := lpoll.NewSub(timeout, nil, "A", "B", "C", "D")
 	defer sub.Drop()
 
-	datach := sub.Get()
+	datach := sub.Get(polltime)
 	time.Sleep(polltime / 2)
 
 	outdata := pubdata{value: 351}
@@ -375,7 +372,7 @@ func TestSub_onDroppedSub_callingGetOrPublishHasNoEffect(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "A", "B", "C")
+	sub := lpoll.NewSub(timeout, nil, "A", "B", "C")
 
 	outdata := pubdata{value: 351}
 	sub.Publish(&outdata, "A")
@@ -384,7 +381,7 @@ func TestSub_onDroppedSub_callingGetOrPublishHasNoEffect(t *testing.T) {
 	sub.Publish(&outdata, "C")
 	time.Sleep(tolerance)
 
-	data := <-sub.Get()
+	data := <-sub.Get(polltime)
 	if time.Now().Sub(start) > 2*tolerance {
 		t.Errorf("get returned late")
 	}
@@ -399,8 +396,8 @@ func TestSub_onDropRightAfterGet_GetReturnsEmpty(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := lpoll.NewSub(timeout, polltime, nil, "A", "B", "C")
-	datach := sub.Get()
+	sub := lpoll.NewSub(timeout, nil, "A", "B", "C")
+	datach := sub.Get(polltime)
 	sub.Drop()
 	if len(<-datach) > 0 {
 		t.Errorf("data coming from nowhere")

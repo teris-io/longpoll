@@ -31,11 +31,11 @@ func TestSubThroughput_onConsequentGets_expectFewEmptyGetsAndLarge100kChunks(t *
 	var received int32 = 0
 	start := time.Now()
 
-	sub := lpoll.NewSub(timeout, polltime, nil, "A")
+	sub := lpoll.NewSub(timeout, nil, "A")
 	defer sub.Drop()
 
 	var mx sync.Mutex
-	go startget(sub, mx, subdone, gethist, &received)
+	go startget(sub, mx, polltime, subdone, gethist, &received)
 	go startpub(sub, pubdone)
 	whenDone(t, start, pubdone, subdone, gethist, &received)
 	if count := gethist[0]; count > 1 {
@@ -62,13 +62,13 @@ func TestSubThroughput_onConcurrentGets_expectEmptyGetsAndSmaller10kChunks(t *te
 	var received int32 = 0
 	start := time.Now()
 
-	sub := lpoll.NewSub(timeout, polltime, nil, "A")
+	sub := lpoll.NewSub(timeout, nil, "A")
 	defer sub.Drop()
 
 	var mx sync.Mutex
-	go startget(sub, mx, subdone, gethist, &received)
-	go startget(sub, mx, subdone, gethist, &received)
-	go startget(sub, mx, subdone, gethist, &received)
+	go startget(sub, mx, polltime, subdone, gethist, &received)
+	go startget(sub, mx, polltime, subdone, gethist, &received)
+	go startget(sub, mx, polltime, subdone, gethist, &received)
 	go startpub(sub, pubdone)
 	whenDone(t, start, pubdone, subdone, gethist, &received)
 	if count := gethist[0]; count < 10 {
@@ -79,14 +79,14 @@ func TestSubThroughput_onConcurrentGets_expectEmptyGetsAndSmaller10kChunks(t *te
 	}
 }
 
-func startget(sub *lpoll.Sub, mx sync.Mutex, subdone chan bool, gethist map[int]int, received *int32) {
+func startget(sub *lpoll.Sub, mx sync.Mutex, polltime time.Duration, subdone chan bool, gethist map[int]int, received *int32) {
 
 	for {
 		gotsofar := atomic.LoadInt32(received)
 		if gotsofar >= pubcount || !sub.IsAlive() {
 			break
 		}
-		getlen := len(<-sub.Get())
+		getlen := len(<-sub.Get(polltime))
 		mx.Lock()
 		*received += int32(getlen)
 
