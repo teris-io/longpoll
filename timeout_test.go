@@ -11,8 +11,6 @@ import (
 )
 
 func TestTimeout_onNoPing_expires(t *testing.T) {
-	testinit()
-
 	timeout := 200 * time.Millisecond
 	tolerance := 50 * time.Millisecond
 
@@ -37,8 +35,6 @@ func TestTimeout_onNoPing_expires(t *testing.T) {
 }
 
 func TestTimeout_onPing_extends(t *testing.T) {
-	testinit()
-
 	timeout := 200 * time.Millisecond
 	tolerance := 50 * time.Millisecond
 
@@ -70,8 +66,6 @@ func TestTimeout_onPing_extends(t *testing.T) {
 }
 
 func TestTimeout_onExpiry_callsHandler_andReportsOnChannel(t *testing.T) {
-	testinit()
-
 	timeout := 200 * time.Millisecond
 	tolerance := 50 * time.Millisecond
 
@@ -91,8 +85,6 @@ func TestTimeout_onExpiry_callsHandler_andReportsOnChannel(t *testing.T) {
 }
 
 func TestTimeout_onNoHandler_reportsOnChannelOnExpiry(t *testing.T) {
-	testinit()
-
 	timeout := 200 * time.Millisecond
 	tolerance := 50 * time.Millisecond
 
@@ -112,8 +104,6 @@ func TestTimeout_onNoHandler_reportsOnChannelOnExpiry(t *testing.T) {
 }
 
 func TestTimeout_onDrop_skipsHandler_butReportsOnChannel(t *testing.T) {
-	testinit()
-
 	timeout := 200 * time.Millisecond
 	tolerance := 50 * time.Millisecond
 

@@ -12,8 +12,6 @@ import (
 )
 
 func TestSub_onNoAction_SubExpiresOnTimeout(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -48,8 +46,6 @@ func TestSub_onNoAction_SubExpiresOnTimeout(t *testing.T) {
 }
 
 func TestSub_onTimeout_handlerCalledWithCorrectId(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -67,8 +63,6 @@ func TestSub_onTimeout_handlerCalledWithCorrectId(t *testing.T) {
 }
 
 func TestSub_onNoHandler_successOnTimeout(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -88,8 +82,6 @@ func TestSub_onNoHandler_successOnTimeout(t *testing.T) {
 }
 
 func TestSub_onNoPublish_GetExpires_andSubExpiresLater(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -121,8 +113,6 @@ func TestSub_onNoPublish_GetExpires_andSubExpiresLater(t *testing.T) {
 }
 
 func TestSub_onDrop_givenGetWaiting_properCleanup(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -168,8 +158,6 @@ type pubdata struct {
 }
 
 func TestSub_onPublishThenGetThenGet_Get1ComesBackImmediately_Get2Expires(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -211,8 +199,6 @@ func TestSub_onPublishThenGetThenGet_Get1ComesBackImmediately_Get2Expires(t *tes
 }
 
 func TestSub_onGetThenPublish_GetComesBackUponPublish(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -241,8 +227,6 @@ func TestSub_onGetThenPublish_GetComesBackUponPublish(t *testing.T) {
 }
 
 func TestSub_onGetThenGetThenPublish_Get1Expires_andGet2ComesWithData(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -286,8 +270,6 @@ func TestSub_onGetThenGetThenPublish_Get1Expires_andGet2ComesWithData(t *testing
 }
 
 func TestSub_onNxPublishThenGet_GetReceivesAll(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -327,8 +309,6 @@ func TestSub_onNxPublishThenGet_GetReceivesAll(t *testing.T) {
 }
 
 func TestSub_onPublish_withAnyMatchingTopic_GetReceives(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -359,8 +339,6 @@ func TestSub_onPublish_withAnyMatchingTopic_GetReceives(t *testing.T) {
 }
 
 func TestSub_onPublish_withNonmatchingTopic_GetIndifferent(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -392,8 +370,6 @@ func TestSub_onPublish_withNonmatchingTopic_GetIndifferent(t *testing.T) {
 }
 
 func TestSub_onDroppedSub_callingGetOrPublishHasNoEffect(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -418,8 +394,6 @@ func TestSub_onDroppedSub_callingGetOrPublishHasNoEffect(t *testing.T) {
 }
 
 func TestSub_onDropRightAfterGet_GetReturnsEmpty(t *testing.T) {
-	testinit()
-
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
