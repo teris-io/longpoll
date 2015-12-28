@@ -14,18 +14,18 @@ type LongPoll struct {
 	mx       sync.Mutex
 	timeout  time.Duration
 	polltime time.Duration
-	subs     map[string]*Subscription
+	subs     map[string]*Sub
 }
 
 func New(timeout time.Duration, polltime time.Duration) *LongPoll {
 	return &LongPoll{
-		subs:     make(map[string]*Subscription),
+		subs:     make(map[string]*Sub),
 		timeout:  timeout,
 		polltime: polltime,
 	}
 }
 
-func (lp *LongPoll) Publish(data *interface{}, topics ...string) {
+func (lp *LongPoll) Publish(data interface{}, topics ...string) {
 	// lock for iterating over map
 	lp.mx.Lock()
 	defer lp.mx.Unlock()
@@ -37,7 +37,7 @@ func (lp *LongPoll) Publish(data *interface{}, topics ...string) {
 }
 
 func (lp *LongPoll) Subscribe(topics ...string) string {
-	sub := NewSubscription(lp.timeout, lp.polltime, func(id string) {
+	sub := NewSub(lp.timeout, lp.polltime, func(id string) {
 		// lock for deletion
 		lp.mx.Lock()
 		delete(lp.subs, id)
@@ -50,7 +50,7 @@ func (lp *LongPoll) Subscribe(topics ...string) string {
 	return sub.id
 }
 
-func (lp *LongPoll) Get(id string) (chan []*interface{}, error) {
+func (lp *LongPoll) Get(id string) (chan []interface{}, error) {
 	// do not lock
 	if sub, ok := lp.subs[id]; ok {
 		return sub.Get(), nil

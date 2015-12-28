@@ -14,7 +14,7 @@ format:
 
 test:
 	@echo ${APP}::test
-	@go test -v -ldflags '$(LDFLAGS)' ./...
+	@go test -ldflags '$(LDFLAGS)' ./...
 
 compile:
 	@echo ${APP}::build

@@ -31,7 +31,7 @@ func TestTimeout_onNoPing_expires(t *testing.T) {
 	if end.Sub(start) < timeout {
 		t.Errorf("timeout too early")
 	}
-	if end.Sub(start) > timeout + tolerance {
+	if end.Sub(start) > timeout+tolerance {
 		t.Errorf("timeout too late")
 	}
 }
@@ -61,10 +61,10 @@ func TestTimeout_onPing_extends(t *testing.T) {
 		t.Errorf("tor alive after timeout")
 	}
 
-	if end.Sub(start) < timeout + timeout - tolerance {
+	if end.Sub(start) < timeout+timeout-tolerance {
 		t.Errorf("timeout too early")
 	}
-	if end.Sub(start) > timeout + timeout {
+	if end.Sub(start) > timeout+timeout {
 		t.Errorf("timeout too late")
 	}
 }

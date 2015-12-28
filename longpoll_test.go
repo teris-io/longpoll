@@ -11,8 +11,8 @@ import (
 
 func testinit() {
 	backend := logging.NewLogBackend(os.Stderr, "", 0)
-	format := logging.MustStringFormatter("%{color}%{time:15:04:05.000} %{longfunc}: %{level: 6s}%{color:reset} %{message}")
+	format := logging.MustStringFormatter("%{color}%{time:15:04:05.000} %{longfunc}: %{level:.6s}%{color:reset} %{message}")
 	logging.SetBackend(logging.NewBackendFormatter(backend, format))
 }
 
-// var log = logging.MustGetLogger("longpoll")
+var log = logging.MustGetLogger("test")

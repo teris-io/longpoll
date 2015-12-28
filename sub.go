@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-type Subscription struct {
+type Sub struct {
 	mx       sync.Mutex
 	id       string
 	polltime time.Duration
 	onClose  func(id string)
 	topics   map[string]bool
-	data     []*interface{}
+	data     []interface{}
 	alive    int32
 	notif    *getnotifier
 	tor      *Timeout
@@ -28,8 +28,9 @@ type getnotifier struct {
 	pinged bool
 }
 
-func NewSubscription(timeout time.Duration, polltime time.Duration, onClose func(id string), topics ...string) *Subscription {
-	sub := &Subscription{
+func NewSub(timeout time.Duration, polltime time.Duration, onClose func(id string), topics ...string) *Sub {
+	log.Info("new Subscription(%v, %v, %v, %v)", timeout, polltime, onClose, topics)
+	sub := &Sub{
 		id:       uuid.NewV4().String(),
 		polltime: polltime,
 		onClose:  onClose,
@@ -40,42 +41,51 @@ func NewSubscription(timeout time.Duration, polltime time.Duration, onClose func
 	for _, topic := range topics {
 		sub.topics[topic] = true
 	}
-	log.Debug("new Subscription")
 	sub.tor = NewTimeout(timeout, sub.Drop)
 	return sub
 }
 
 // Publish appends supplied data to the internal storage of the subscription
 // channel if the topic is one of subscribed to and the channel is alive.
-func (sub *Subscription) Publish(data *interface{}, topic string) {
-	if !sub.IsAlive() {
-		return
-	}
-	if _, ok := sub.topics[topic]; !ok {
+func (sub *Sub) Publish(data interface{}, topic string) {
+	if _, ok := sub.topics[topic]; !ok || !sub.IsAlive() {
 		return
 	}
 	go func() {
 		sub.mx.Lock()
 		defer sub.mx.Unlock()
 
-		sub.data = append(sub.data, data)
-		if sub.notif != nil && !sub.notif.pinged {
-			sub.notif.ping <- true
-			sub.notif.pinged = true
+		// subscription could have died between the early check and entering the lock
+		if sub.IsAlive() {
+			sub.data = append(sub.data, data)
+			if sub.notif != nil && !sub.notif.pinged {
+				sub.notif.ping <- true
+				sub.notif.pinged = true
+			}
 		}
 	}()
 }
 
-func (sub *Subscription) Get() chan []*interface{} {
-	resp := make(chan []*interface{}, 1)
+func (sub *Sub) Get() chan []interface{} {
+	resp := make(chan []interface{}, 1)
 	if !sub.IsAlive() {
 		resp <- nil
 		return resp
 	}
+
+	// TODO beautify and add explanatory comments
 	go func() {
+		log.Debug("incoming get request")
 		sub.tor.Ping()
 
 		sub.mx.Lock()
+		// subscription could have died between the early check and entering the lock
+		if !sub.IsAlive() {
+			resp <- nil
+			sub.mx.Unlock()
+			return
+		}
+		log.Debug("incoming get request")
 
 		// earlier "get" won't be notified any longer
 		sub.notif = nil
@@ -83,7 +93,6 @@ func (sub *Subscription) Get() chan []*interface{} {
 		if len(sub.data) > 0 {
 			resp <- sub.data
 			sub.data = nil
-
 			sub.mx.Unlock()
 			return
 		}
@@ -93,23 +102,31 @@ func (sub *Subscription) Get() chan []*interface{} {
 
 		sub.mx.Unlock()
 
+		gotdata := no
+
 		pollend := make(chan bool, 1)
 		go func() {
-			time.Sleep(sub.polltime)
+			endpoint := time.Now().Add(sub.polltime)
+			// let it quit much quicker
+			hundredth := sub.polltime / 100
+			for atomic.LoadInt32(&gotdata) == no && time.Now().Before(endpoint) {
+				time.Sleep(hundredth)
+			}
 			pollend <- true
 		}()
 
-		// TODO need an infinite loop here?
-
 		select {
 		case <-notif.ping:
+			atomic.StoreInt32(&gotdata, yes)
 			sub.mx.Lock()
+			ndata := len(sub.data)
 			resp <- sub.data
 			sub.data = nil
 			if sub.notif == notif {
 				sub.notif = nil
 			}
 			sub.mx.Unlock()
+			log.Debug("get received %v data objects", ndata)
 
 		case <-pollend:
 			sub.mx.Lock()
@@ -118,33 +135,66 @@ func (sub *Subscription) Get() chan []*interface{} {
 				sub.notif = nil
 			}
 			sub.mx.Unlock()
+			log.Debug("get long poll ended empty")
 		}
 	}()
 	return resp
 }
 
-func (sub *Subscription) IsAlive() bool {
+func (sub *Sub) IsAlive() bool {
 	return atomic.LoadInt32(&sub.alive) == yes
 }
 
-func (sub *Subscription) Drop() {
+func (sub *Sub) Drop() {
 	if !sub.IsAlive() {
 		return
 	}
 	atomic.StoreInt32(&sub.alive, no)
-	go func() {
-		sub.tor.Drop()
+	log.Notice("dropping subscription %v", sub.id)
 
+	go func() {
+		// prevent any external changes to data, new subscriptions
 		sub.mx.Lock()
 		defer sub.mx.Unlock()
 
+		// signal timeout handler to quit
+		sub.tor.Drop()
+		// clear topics: no publishing possible
+		sub.topics = make(map[string]bool)
+		// clear data: no subscription gets anything
 		sub.data = nil
+		// let current get know that it should quit (with no data, see above)
 		if sub.notif != nil && !sub.notif.pinged {
 			sub.notif.ping <- true
 		}
+		// tell publish that there is no get listening, let it quit
 		sub.notif = nil
+		// execute callback (e.g. removing from pubsub subscriptions map)
 		if sub.onClose != nil {
 			sub.onClose(sub.id)
 		}
 	}()
+}
+
+func (sub *Sub) Id() string {
+	return sub.id
+}
+
+func (sub *Sub) Topics() []string {
+	// do not synchronise, value only changes on drop
+	var res []string
+	for topic, _ := range sub.topics {
+		res = append(res, topic)
+	}
+	return res
+}
+
+func (sub *Sub) QueueSize() int {
+	// do not synchronise
+	return len(sub.data)
+}
+
+func (sub *Sub) GetWaiting() bool {
+	// do not synchronise
+	return sub.notif != nil
 }

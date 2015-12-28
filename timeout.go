@@ -28,7 +28,7 @@ type Timeout struct {
 // NewTimeout creates and starts a new timeout handler accepting the
 // duration of
 func NewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
-	log.Debug("new Timeout(%v, %v)", timeout, onTimeout)
+	log.Info("new Timeout(%v, %v)", timeout, onTimeout)
 	tor := &Timeout{
 		alive:     yes,
 		report:    make(chan bool, 1),
@@ -39,18 +39,31 @@ func NewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
 	return tor
 }
 
+// Ping pings the timeout handler extending it for another timeout duration.
 func (tor *Timeout) Ping() {
 	if tor.IsAlive() {
 		atomic.StoreInt64(&tor.lastping, tor.now())
+		log.Debug("timeout pinged")
 	}
 }
 
+// ReportChan retrieves the timeout reporting channel, which will get a true
+// reported on exit (in case of timeout or drop).
 func (tor *Timeout) ReportChan() chan bool {
 	return tor.report
 }
 
+// Drop drops the timeout handler and reports the exit on the reporting channel.
+// The drop will take place at most after 1/100th of the timeout and the
+// onTimeout handler will not get called.
 func (tor *Timeout) Drop() {
 	atomic.StoreInt32(&tor.alive, no)
+	log.Debug("timeout dropped")
+}
+
+// IsAlive verifies if the timeout handler is up and running.
+func (tor *Timeout) IsAlive() bool {
+	return atomic.LoadInt32(&tor.alive) == yes
 }
 
 func (tor *Timeout) handle(timeout int64) {
@@ -60,8 +73,8 @@ func (tor *Timeout) handle(timeout int64) {
 		time.Sleep(time.Duration(hundredth))
 	}
 	if tor.IsAlive() {
+		atomic.StoreInt32(&tor.alive, no)
 		log.Notice("timeout detected")
-		tor.Drop()
 		if tor.onTimeout != nil {
 			log.Debug("calling onTimeout handler")
 			go tor.onTimeout()
@@ -69,10 +82,6 @@ func (tor *Timeout) handle(timeout int64) {
 	}
 	log.Debug("reporting exit on channel")
 	tor.report <- true
-}
-
-func (tor *Timeout) IsAlive() bool {
-	return atomic.LoadInt32(&tor.alive) == yes
 }
 
 func (tor *Timeout) elapsed() int64 {
