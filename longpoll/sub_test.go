@@ -5,10 +5,10 @@
 package longpoll_test
 
 import (
+	"github.com/ventu-io/go-pubsub/longpoll"
 	"sort"
 	"testing"
 	"time"
-	"ventu.tech/ventu-io/go-pubsub/longpoll"
 )
 
 func TestSub_onNoAction_SubExpiresOnTimeout(t *testing.T) {

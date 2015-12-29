@@ -5,9 +5,9 @@
 package longpoll_test
 
 import (
+	"github.com/ventu-io/go-pubsub/longpoll"
 	"testing"
 	"time"
-	"ventu.tech/ventu-io/go-pubsub/longpoll"
 )
 
 func TestTimeout_onNoPing_expires(t *testing.T) {
