@@ -104,7 +104,6 @@ go func() {
 ```
 A comprehensive example can be run from the demo [repository][demo] via
 
-    go build
     ./go-pubsub-examples 1
 
 **Long-polling on a single subscription channel:**
@@ -135,18 +134,15 @@ go func() {
 ```
 A comprehensive example can be run from the demo [repository][demo] via
 
-    go build
     ./go-pubsub-examples 2
 
 ### Performance
 
 Using the code from the demo [repository][demo] a throughput test can be run using the command
 below. Measured on conventional hardware long-polling on a single channel processes 1 million data
-samples in (0.8, 2.5) seconds. The time is measured from the moment the first sample is published
+samples in about 1s. The time is measured from the moment the first sample is published
 till the last one is received.
 
-    go build
-    ./go-pubsub-examples 3
     ./go-pubsub-examples 4
 
 ## License

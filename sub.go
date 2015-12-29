@@ -6,6 +6,7 @@ package longpoll
 
 import (
 	"github.com/satori/go.uuid"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -91,6 +92,7 @@ func (sub *Sub) Publish(data interface{}, topic string) {
 			}
 		}
 	}()
+	runtime.Gosched()
 }
 
 // Get requests for data published on the topics subscribed to. It i not topic-
