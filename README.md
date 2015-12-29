@@ -36,12 +36,15 @@ The library can be installed by one of the following methods:
 
 * using `go get`
 
-      go get github.com/ventu-io/go-longpoll
+	```
+	go get github.com/ventu-io/go-longpoll
+	```
 
 * via cloning this repository:
 
-      git clone git@github.com:ventu-io/go-longpoll.git ${GOPATH}/src/github
-      .com/ventu-io/go-longpoll
+	```
+	git clone git@github.com:ventu-io/go-longpoll.git ${GOPATH}/src/github.com/ventu-io/go-longpoll
+	```
 
 ## Implementation details and examples
 
