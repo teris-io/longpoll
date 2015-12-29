@@ -8,7 +8,7 @@ to change.
 
 # Go long-polling library
 
-![godoc][godocimage]
+[![godoc][godocimage]][godocimage]
 
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
