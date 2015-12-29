@@ -7,21 +7,24 @@ package longpoll
 import (
 	"errors"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
-type LPoll struct {
-	mx   sync.Mutex
-	subs map[string]*Sub
+type LongPoll struct {
+	mx    sync.Mutex
+	subs  map[string]*Sub
+	alive int32
 }
 
-func New() *LPoll {
-	return &LPoll{
-		subs: make(map[string]*Sub),
+func New() *LongPoll {
+	return &LongPoll{
+		subs:  make(map[string]*Sub),
+		alive: yes,
 	}
 }
 
-func (lp *LPoll) Publish(data interface{}, topics ...string) {
+func (lp *LongPoll) Publish(data interface{}, topics ...string) {
 	// lock for iterating over map
 	lp.mx.Lock()
 	defer lp.mx.Unlock()
@@ -32,7 +35,7 @@ func (lp *LPoll) Publish(data interface{}, topics ...string) {
 	}
 }
 
-func (lp *LPoll) Subscribe(timeout time.Duration, topics ...string) string {
+func (lp *LongPoll) Subscribe(timeout time.Duration, topics ...string) string {
 	sub := NewSub(timeout, func(id string) {
 		// lock for deletion
 		lp.mx.Lock()
@@ -46,7 +49,7 @@ func (lp *LPoll) Subscribe(timeout time.Duration, topics ...string) string {
 	return sub.id
 }
 
-func (lp *LPoll) Get(id string, polltime time.Duration) (chan []interface{}, error) {
+func (lp *LongPoll) Get(id string, polltime time.Duration) (chan []interface{}, error) {
 	// do not lock
 	if sub, ok := lp.subs[id]; ok {
 		return sub.Get(polltime), nil
@@ -55,7 +58,7 @@ func (lp *LPoll) Get(id string, polltime time.Duration) (chan []interface{}, err
 	}
 }
 
-func (lp *LPoll) Drop(id string) {
+func (lp *LongPoll) Drop(id string) {
 	if sub, ok := lp.subs[id]; ok {
 		go sub.Drop()
 		// lock for deletion
@@ -65,7 +68,8 @@ func (lp *LPoll) Drop(id string) {
 	}
 }
 
-func (lp *LPoll) Shutdown() {
+func (lp *LongPoll) Shutdown() {
+	atomic.StoreInt32(&lp.alive, no)
 	// lock for iterating over map
 	lp.mx.Lock()
 	defer lp.mx.Unlock()
@@ -75,7 +79,7 @@ func (lp *LPoll) Shutdown() {
 	}
 }
 
-func (lp *LPoll) List() []string {
+func (lp *LongPoll) List() []string {
 	// lock for iterating over map
 	lp.mx.Lock()
 	defer lp.mx.Unlock()
@@ -86,7 +90,7 @@ func (lp *LPoll) List() []string {
 	return res
 }
 
-func (lp *LPoll) Topics() []string {
+func (lp *LongPoll) Topics() []string {
 	topics := make(map[string]bool)
 	// lock for iterating over map
 	lp.mx.Lock()
@@ -102,4 +106,9 @@ func (lp *LPoll) Topics() []string {
 		res = append(res, topic)
 	}
 	return res
+}
+
+// IsAlive tests if the subscription is up and running.
+func (lp *LongPoll) IsAlive() bool {
+	return atomic.LoadInt32(&lp.alive) == yes
 }
