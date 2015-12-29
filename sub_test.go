@@ -5,7 +5,7 @@
 package longpoll_test
 
 import (
-	"github.com/ventu-io/go-pubsub/longpoll"
+	"github.com/ventu-io/go-longpoll"
 	"sort"
 	"testing"
 	"time"

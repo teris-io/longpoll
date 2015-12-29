@@ -6,6 +6,6 @@ build:
 	@echo ${APP}::format
 	@go fmt ./...
 	@echo ${APP}::test
-	@go test -cover -tags test ./...
-	@echo ${APP}::build longpoll
-	@go build ./longpoll
+	@go test -cover ./...
+	@echo ${APP}::build
+	@go build
