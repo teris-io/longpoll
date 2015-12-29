@@ -6,7 +6,10 @@ Before first (minor) release:
 * `longpoll.LongPoll` is feature complete, but the API, in particular error handling, is subject
 to change.
 
-# go-longpoll
+# Go long-polling library
+
+![godoc][godocimage]
+
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
 long-polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the
@@ -153,7 +156,8 @@ Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the [license conditions][license] are met.
 
 [go]: https://golang.org
+[godocimage]: http://img.shields.io/badge/godoc-reference-blue.svg?style=flat
 [pubsub]: https://en.wikipedia.org/wiki/Publish–subscribe_pattern
-[docs]: http://godoc.org/github.com/ventu-io/go-longpoll
+[docs]: https://godoc.org/github.com/ventu-io/go-longpoll
 [demo]:    https://github.com/ventu-io/go-pubsub-examples/
 [license]: https://github.com/ventu-io/go-longpoll/blob/master/LICENSE
