@@ -8,7 +8,7 @@ to change.
 
 # Go long-polling library
 
-[![godoc][godocimage]][docs]
+[![API documentation][godocimage]][docs] [![Build status][buildimage]][travis]
 
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
@@ -157,6 +157,8 @@ modification, are permitted provided that the [license conditions][license] are 
 
 [go]: https://golang.org
 [godocimage]: http://img.shields.io/badge/godoc-reference-blue.svg?style=flat
+[buildimage]: https://travis-ci.org/ventu-io/go-longpoll.svg?branch=master
+[travis]: https://travis-ci.org/ventu-io/go-longpoll
 [pubsub]: https://en.wikipedia.org/wiki/Publish–subscribe_pattern
 [docs]: https://godoc.org/github.com/ventu-io/go-longpoll
 [demo]:    https://github.com/ventu-io/go-pubsub-examples/
