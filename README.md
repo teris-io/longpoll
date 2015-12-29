@@ -1,3 +1,5 @@
+[![API documentation][godocimage]][docs] [![Build status][buildimage]][travis]
+
 ### Work in progress...
 
 Before first (minor) release:
@@ -6,10 +8,7 @@ Before first (minor) release:
 * `longpoll.LongPoll` is feature complete, but the API, in particular error handling, is subject
 to change.
 
-# Go long-polling library
-
-[![API documentation][godocimage]][docs] [![Build status][buildimage]][travis]
-
+# Long-polling library for the Go language
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
 long-polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the
