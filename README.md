@@ -1,6 +1,11 @@
+# Work in progress...
+
+The core is written and tested. More formal tests, examples and documentation being added, whihc might lead
+to some API changes.
+
 # go-pubsub
 
-`go-pubsub` is a Go library providing implementations of the Publish/Subscribe (pubsub) messaging paradigm.
+`go-pubsub` is a Go library providing different implementations of the Publish/Subscribe (pubsub) messaging paradigm.
 Currently the library supports ~~basic local messaging and~~ long polling subscribers for web applications.
 
 The documentation is available at [GoDocs][docs].
@@ -15,7 +20,7 @@ The library can be installed using one of the following two methods:
 
       git clone git@github.com:ventu-io/go-pubsub.git ${GOPATH}/src/github.com/ventu-io/go-pubsub
 
-## Long polling example
+## Long polling
 
 The `longpoll` package provides a pubsub implementation for long polling subscribers to be used in web
 servers or other distributed systems.
@@ -34,7 +39,7 @@ The library does not provide any web server handlers, but only the backend allow
 for integrating into a web server. No data persistence is currently provided nor  backends supported (i.e. running
 down the backend may lead to data loss). This might change in future releases.
 
-The following [repository][demo] provides multiple examples for a single channel/subscription operation
+The following [demo repository][demo] provides multiple examples for a single channel/subscription operation
 and for a full-stack mult-subscription long polling pubsub.
 
 **Long polling on a single subscription channel:**
@@ -65,6 +70,15 @@ as well as subscription management;
 * `ps.Publish(data, topics...)`: non-blocking publishing to all subscriptions of matching topics;
 * `ch, ok := ps.Get(id, pollDuration)` and `data := <-ch`: receiving data within `pollDuration` for subscription with Id `id`.
 
+### Performance
+
+Using the code from the following [demo repository][demo] a throughput test can be run via
+
+    ./go-pubsub-examples 4
+
+Measured on conventional hardware the long polling on a single channel processes 1 million samples
+in between 0.8 and 2.5s. Time measured from first published till last received. Processing is
+faster with concurrent consumers rather than a single consumer executed sequentially.
 
 ## License
 
