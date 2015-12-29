@@ -138,10 +138,12 @@ A comprehensive example can be run from the demo [repository][demo] via
 
 ### Performance
 
-Using the code from the demo [repository][demo] a throughput test can be run using the command
-below. Measured on conventional hardware long-polling on a single channel processes 1 million data
-samples in about 1s. The time is measured from the moment the first sample is published
-till the last one is received.
+Using a benchmark from the demo [repository][demo] a throughput test can be run using the
+command below.
+
+Measured on conventional hardware using a benchmark in the demo [repository][demo], the
+implemented algorithm publisheds and concurrently receives 1 million units of data on average over
+880ms:
 
     ./go-pubsub-examples 4
 

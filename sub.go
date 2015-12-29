@@ -87,8 +87,8 @@ func (sub *Sub) Publish(data interface{}, topic string) {
 		if sub.IsAlive() {
 			sub.data = append(sub.data, data)
 			if sub.notif != nil && !sub.notif.pinged {
-				sub.notif.ping <- true
 				sub.notif.pinged = true
+				sub.notif.ping <- true
 			}
 		}
 	}()
