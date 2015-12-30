@@ -4,9 +4,8 @@
 
 Before first (minor) release:
 
-* `longpoll.Channel` is complete and fully tested.
-* `longpoll.LongPoll` is feature complete, but the API, in particular error handling, is subject
-to change.
+* `longpoll.Channel` is complete and fully tested and documented;
+* `longpoll.LongPoll` is feature complete with stable API, more testing and documentation pending.
 
 # Long polling library for the Go language
 
@@ -75,32 +74,36 @@ Handling of long polling subscriptions, publishing and receiving data is done by
 
 ```go
 ps := longpoll.New()
-id1 := ps.Subscribe(time.Minute, "TopicA", "TopicB")
-id2 := ps.Subscribe(time.Minute, "TopicB", "TopicC")
+id1, _ := ps.Subscribe(time.Minute, "TopicA", "TopicB")
+id2, _ := ps.Subscribe(time.Minute, "TopicB", "TopicC")
 
 go func() {
 	for {
-		ch, ok := ps.Get(id1, 30*time.Second)
-		fmt.Printf("%v received %v", id1, <-ch)
+		if datach, err := ps.Get(id1, 30*time.Second); err == nil {
+			fmt.Printf("%v received %v", id1, <-datach)
+		} else {
+			break
+		}
 	}
 }()
 
 go func() {
 	for {
-		ch, ok := ps.Get(id2, 30*time.Second)
-		fmt.Printf("%v received %v", id2, <-ch)
+		if datach, err := ps.Get(id2, 20*time.Second); err == nil {
+			fmt.Printf("%v received %v", id2, <-datach)
+		} else {
+			break
+		}
 	}
 }()
 
-go func() {
-	for {
-		// data published on TopicB will be received by id1 and id2, TopicC by id2 only
-		ps.Publish({"random": rand.Float64()}, "TopicB", "TopicC")
+for {
+	// data published on TopicB will be received by id1 and id2, TopicC by id2 only
+	ps.Publish({"random": rand.Float64()}, "TopicB", "TopicC")
 
-		// sleep for up to 50s
-		time.Sleep(time.Duration(rand.Intn(5e10)))
-	}
-}()
+	// sleep for up to 50s
+	time.Sleep(time.Duration(rand.Intn(5e10)))
+}
 ```
 A comprehensive example can be run from the demo [repository][demo] via
 
@@ -111,26 +114,28 @@ A comprehensive example can be run from the demo [repository][demo] via
 Handling of single-channel long polling pubsub is done by the `longpoll.Sub` type:
 
 ```go
-sub := longpoll.NewSub(time.Minute, func (id string) {
+ch := longpoll.MustNewChannel(time.Minute, func (id string) {
 	// action on exit
 }, "TopicA", "TopicB")
 
 go func() {
 	for {
-		fmt.Printf("received %v", <-sub.Get(30*time.Second))
+		if datach, err := ch.Get(20*time.Second); err == nil {
+			fmt.Printf("received %v", <-datach)
+		} else {
+			break
+		}
 	}
 }()
 
-go func() {
-	for {
-		sub.Publish({"random": rand.Float64()}, "TopicB")
-		// above subscription will not receive this data
-		sub.Publish({"random": rand.Float64()}, "TopicC")
+for {
+	ch.Publish({"random": rand.Float64()}, "TopicB")
+	// above subscription will not receive this data
+	ch.Publish({"random": rand.Float64()}, "TopicC")
 
-		// sleep for up to 50s
-		time.Sleep(time.Duration(rand.Intn(5e10)))
-	}
-}()
+	// sleep for up to 50s
+	time.Sleep(time.Duration(rand.Intn(5e10)))
+}
 ```
 A comprehensive example can be run from the demo [repository][demo] via
 
