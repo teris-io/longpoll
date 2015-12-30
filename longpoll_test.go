@@ -3,3 +3,11 @@
 // license that can be found in the LICENSE file
 
 package longpoll_test
+
+import (
+	"testing"
+)
+
+func TestLongPoll_onNewLongPoll_active(t *testing.T) {
+	t.SkipNow()
+}

@@ -104,7 +104,7 @@ func (ch *Channel) Publish(data interface{}, topic string) error {
 	return nil
 }
 
-// Get requests for data published on all of the channel topics. The function returns a channel
+// Get requests data published on all of the channel topics. The function returns a channel
 // to receive the data set on.
 //
 // The request is held until data becomes available (published to a matching topic). Upon new data,

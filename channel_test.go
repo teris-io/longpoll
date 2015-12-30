@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func TestNewChannel_success(t *testing.T) {
+func TestChannel_onNewChannel_active(t *testing.T) {
 	timeout := 400 * time.Millisecond
 
 	ch, err := longpoll.NewChannel(timeout, func(id string) {}, "any")
@@ -23,7 +23,7 @@ func TestNewChannel_success(t *testing.T) {
 	}
 }
 
-func TestMustNewChannel_success(t *testing.T) {
+func TestChannel_onMustNewChannel_active(t *testing.T) {
 	timeout := 400 * time.Millisecond
 
 	ch := longpoll.MustNewChannel(timeout, func(id string) {}, "any")
@@ -32,14 +32,14 @@ func TestMustNewChannel_success(t *testing.T) {
 	}
 }
 
-func TestNewChannel_onZeroTimeout_errors(t *testing.T) {
+func TestChannel_onNewChannel_withZeroTimeout_error(t *testing.T) {
 	_, err := longpoll.NewChannel(0*time.Second, nil, "any")
 	if err == nil {
 		t.Errorf("error expected")
 	}
 }
 
-func TestNewChannel_onEmptyTopics_errors(t *testing.T) {
+func TestChannel_onNewChannel_withEmptyTopics_error(t *testing.T) {
 	var topics []string
 	_, err := longpoll.NewChannel(10*time.Second, nil, topics...)
 	if err == nil {
@@ -47,7 +47,7 @@ func TestNewChannel_onEmptyTopics_errors(t *testing.T) {
 	}
 }
 
-func TestMustNewChannel_onEmptyTopics_errors(t *testing.T) {
+func TestChannel_onMustNewChannel_withEmptyTopics_panics(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
 			t.Error("panic expected")
