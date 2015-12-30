@@ -18,7 +18,7 @@ func TestSub_onNoAction_SubExpiresOnTimeout(t *testing.T) {
 	start := time.Now()
 	var end time.Time
 
-	sub := longpoll.NewSub(timeout, func(id string) {
+	sub := longpoll.MustNewSub(timeout, func(id string) {
 		end = time.Now()
 	}, "any")
 	defer sub.Drop()
@@ -49,7 +49,7 @@ func TestSub_onTimeout_handlerCalledWithCorrectId(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	var idx string
-	sub := longpoll.NewSub(timeout, func(id string) {
+	sub := longpoll.MustNewSub(timeout, func(id string) {
 		idx = id
 	}, "any")
 	defer sub.Drop()
@@ -64,7 +64,7 @@ func TestSub_onNoHandler_successOnTimeout(t *testing.T) {
 	timeout := 400 * time.Millisecond
 	tolerance := 25 * time.Millisecond
 
-	sub := longpoll.NewSub(timeout, nil, "any")
+	sub := longpoll.MustNewSub(timeout, nil, "any")
 	defer sub.Drop()
 
 	time.Sleep(timeout - tolerance)
@@ -84,7 +84,7 @@ func TestSub_onNoPublish_GetExpires_andSubExpiresLater(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "any")
+	sub := longpoll.MustNewSub(timeout, nil, "any")
 	defer sub.Drop()
 
 	time.Sleep(polltime)
@@ -114,7 +114,7 @@ func TestSub_onDrop_givenGetWaiting_properCleanup(t *testing.T) {
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
 
-	sub := longpoll.NewSub(timeout, nil, "A", "B")
+	sub := longpoll.MustNewSub(timeout, nil, "A", "B")
 	if sub.QueueSize() != 0 {
 		t.Errorf("unexpected queue size")
 	}
@@ -160,7 +160,7 @@ func TestSub_onPublishThenGetThenGet_Get1ComesBackImmediately_Get2Expires(t *tes
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "A")
+	sub := longpoll.MustNewSub(timeout, nil, "A")
 	defer sub.Drop()
 
 	outdata := pubdata{value: 351}
@@ -201,7 +201,7 @@ func TestSub_onGetThenPublish_GetComesBackUponPublish(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "A")
+	sub := longpoll.MustNewSub(timeout, nil, "A")
 	defer sub.Drop()
 
 	datach := sub.Get(polltime)
@@ -229,7 +229,7 @@ func TestSub_onGetThenGetThenPublish_Get1Expires_andGet2ComesWithData(t *testing
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "A")
+	sub := longpoll.MustNewSub(timeout, nil, "A")
 	defer sub.Drop()
 
 	datach1 := sub.Get(polltime)
@@ -272,7 +272,7 @@ func TestSub_onNxPublishThenGet_GetReceivesAll(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "A", "C")
+	sub := longpoll.MustNewSub(timeout, nil, "A", "C")
 	defer sub.Drop()
 
 	outdata1 := pubdata{value: 1}
@@ -311,7 +311,7 @@ func TestSub_onPublish_withAnyMatchingTopic_GetReceives(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "A", "B", "C", "D")
+	sub := longpoll.MustNewSub(timeout, nil, "A", "B", "C", "D")
 	defer sub.Drop()
 
 	datach := sub.Get(polltime)
@@ -341,7 +341,7 @@ func TestSub_onPublish_withNonmatchingTopic_GetIndifferent(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "A", "B", "C", "D")
+	sub := longpoll.MustNewSub(timeout, nil, "A", "B", "C", "D")
 	defer sub.Drop()
 
 	datach := sub.Get(polltime)
@@ -372,7 +372,7 @@ func TestSub_onDroppedSub_callingGetOrPublishHasNoEffect(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "A", "B", "C")
+	sub := longpoll.MustNewSub(timeout, nil, "A", "B", "C")
 
 	outdata := pubdata{value: 351}
 	sub.Publish(&outdata, "A")
@@ -396,7 +396,7 @@ func TestSub_onDropRightAfterGet_GetReturnsEmpty(t *testing.T) {
 	tolerance := 25 * time.Millisecond
 
 	start := time.Now()
-	sub := longpoll.NewSub(timeout, nil, "A", "B", "C")
+	sub := longpoll.MustNewSub(timeout, nil, "A", "B", "C")
 	datach := sub.Get(polltime)
 	sub.Drop()
 	if len(<-datach) > 0 {

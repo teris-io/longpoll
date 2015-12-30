@@ -5,6 +5,7 @@
 package longpoll
 
 import (
+	"errors"
 	"sync/atomic"
 	"time"
 )
@@ -25,18 +26,29 @@ type Timeout struct {
 	onTimeout func()
 }
 
-// NewTimeout creates and starts a new timeout handler accepting the
-// duration of
-func NewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
-	log.Info("new Timeout(%v, %v)", timeout, onTimeout)
+// NewTimeout creates and starts a new timeout timer accepting an optional exit handler.
+func NewTimeout(timeout time.Duration, onTimeout func()) (*Timeout, error) {
+	if timeout == 0 {
+		return nil, errors.New("non zero timeout value expected")
+	}
 	tor := &Timeout{
 		alive:     yes,
 		report:    make(chan bool, 1),
 		onTimeout: onTimeout,
 	}
+	log.Info("new Timeout(%v, %v)", timeout, onTimeout)
 	tor.Ping()
 	go tor.handle(int64(timeout))
-	return tor
+	return tor, nil
+}
+
+// MustNewTimeout acts just like NewTimeout, however, it does not return errors and panics instead.
+func MustNewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
+	if tor, err := NewTimeout(timeout, onTimeout); err == nil {
+		return tor
+	} else {
+		panic(err)
+	}
 }
 
 // Ping pings the timeout handler extending it for another timeout duration.

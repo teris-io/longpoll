@@ -35,18 +35,22 @@ func (lp *LongPoll) Publish(data interface{}, topics ...string) {
 	}
 }
 
-func (lp *LongPoll) Subscribe(timeout time.Duration, topics ...string) string {
-	sub := NewSub(timeout, func(id string) {
+func (lp *LongPoll) Subscribe(timeout time.Duration, topics ...string) (string, error) {
+	onClose := func(id string) {
 		// lock for deletion
 		lp.mx.Lock()
 		delete(lp.subs, id)
 		lp.mx.Unlock()
-	}, topics...)
-	// lock for element insertion
-	lp.mx.Lock()
-	lp.subs[sub.id] = sub
-	lp.mx.Unlock()
-	return sub.id
+	}
+	if sub, err := NewSub(timeout, onClose, topics...); err == nil {
+		// lock for element insertion
+		lp.mx.Lock()
+		lp.subs[sub.id] = sub
+		lp.mx.Unlock()
+		return sub.id, nil
+	} else {
+		return "", err
+	}
 }
 
 func (lp *LongPoll) Get(id string, polltime time.Duration) (chan []interface{}, error) {

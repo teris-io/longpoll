@@ -16,7 +16,7 @@ func TestTimeout_onNoPing_expires(t *testing.T) {
 
 	start := time.Now()
 	var end time.Time
-	tor := longpoll.NewTimeout(timeout, func() {
+	tor := longpoll.MustNewTimeout(timeout, func() {
 		end = time.Now()
 	})
 	if !tor.IsAlive() {
@@ -40,7 +40,7 @@ func TestTimeout_onPing_extends(t *testing.T) {
 
 	start := time.Now()
 	var end time.Time
-	tor := longpoll.NewTimeout(timeout, func() {
+	tor := longpoll.MustNewTimeout(timeout, func() {
 		end = time.Now()
 	})
 
@@ -70,7 +70,7 @@ func TestTimeout_onExpiry_callsHandler_andReportsOnChannel(t *testing.T) {
 	tolerance := 50 * time.Millisecond
 
 	failed := true
-	tor := longpoll.NewTimeout(timeout, func() {
+	tor := longpoll.MustNewTimeout(timeout, func() {
 		failed = false
 	})
 	time.Sleep(timeout + tolerance)
@@ -88,7 +88,7 @@ func TestTimeout_onNoHandler_reportsOnChannelOnExpiry(t *testing.T) {
 	timeout := 200 * time.Millisecond
 	tolerance := 50 * time.Millisecond
 
-	tor := longpoll.NewTimeout(timeout, nil)
+	tor := longpoll.MustNewTimeout(timeout, nil)
 	if !tor.IsAlive() {
 		t.Errorf("tor not alive on start")
 	}
@@ -108,7 +108,7 @@ func TestTimeout_onDrop_skipsHandler_butReportsOnChannel(t *testing.T) {
 	tolerance := 50 * time.Millisecond
 
 	failed := false
-	tor := longpoll.NewTimeout(timeout, func() {
+	tor := longpoll.MustNewTimeout(timeout, func() {
 		failed = true
 	})
 	if !tor.IsAlive() {

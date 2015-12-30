@@ -5,6 +5,7 @@
 package longpoll
 
 import (
+	"errors"
 	"github.com/satori/go.uuid"
 	"runtime"
 	"sync"
@@ -12,26 +13,13 @@ import (
 	"time"
 )
 
-// Sub represents a long-poll subscription. Data can be published to any topic
-// the subscription was initialised for. The retrieval is not topic specific.
+// Sub represents a single channel for publishing and receiving data over a long-polling
+// subscription. Data published to any of the topics subscribed to will be received by the client
+// asking for new data. The receiving is not split by topic.
 //
-// If data has already been published by the time the Get request is made,
-// the subscription will immediately return the data back. Otherwise, the Get
-// request will wait until data is published or long-poll timeout occurs,
-// in which case Get returns an empty data set.
-//
-// If multiple data instances are published while a Get request is waiting,
-// there is no contract for that Get request to receive exactly one or more
-// than one instances of data. Subsequent Get requests may be required to
-// receive all the data. If another Get request is made while one is waiting
-// the latter (the one issued earlier) is most likely to return no data with
-// all data delivered in the later request. It is not advisable to issue
-// concurrent Get requests to the same subscription, but overall no data
-// loss is expected.
-//
-// The subscription is setup to time out if no Get request is issued during the
-// timeout period provided at construction. Every Get request extends the
-// lifetime of the subscription for another duration of the initial timeout.
+// The subscription is setup to timeout if no Get request is made before the end of the timeout
+// period provided at construction. Every Get request extends the lifetime of the subscription for
+// the duration of the timeout.
 type Sub struct {
 	mx      sync.Mutex
 	id      string
@@ -48,27 +36,42 @@ type getnotifier struct {
 	pinged bool
 }
 
-// NewSub constructs a new subscription with the given timeout, exit handler
-// (can be nil), and a collection of topics. Only data published to those
-// topics will be delivered to clients.
+// NewSub constructs a new long-polling pubsub channel with given timeout, optional exit handler,
+// and topics. Every new subscription gets a unique Id assigned based on UUID.v4.
 //
-// Every new subscription gets a unique Id assigned based on UUIDv.4.
-//
-// Constructing a subscription with NewSub will start the timeout timer.
-func NewSub(timeout time.Duration, onClose func(id string), topics ...string) *Sub {
-	log.Info("new Subscription(%v, %v, %v)", timeout, onClose, topics)
-	sub := &Sub{
+// Constructing a subscription with NewSub starts a timeout timer. The first Get request must
+// follow within the timeout window.
+func NewSub(timeout time.Duration, onClose func(id string), topics ...string) (*Sub, error) {
+	if topics == nil || len(topics) < 1 {
+		return nil, errors.New("at least one topic expected")
+	}
+	sub := Sub{
 		id:      uuid.NewV4().String(),
 		onClose: onClose,
 		topics:  make(map[string]bool),
 		alive:   yes,
-		notif:   nil,
 	}
 	for _, topic := range topics {
 		sub.topics[topic] = true
 	}
-	sub.tor = NewTimeout(timeout, sub.Drop)
-	return sub
+	tor, err := NewTimeout(timeout, sub.Drop)
+	if err == nil {
+		sub.tor = tor
+	} else {
+		return nil, err
+	}
+	log.Info("new Subscription(%v, %v, %v)", timeout, onClose, topics)
+	return &sub, nil
+}
+
+// MustNewSub constructs an instance of Sub similarly to NewSub, however, it does not return
+// errors and panics instead.
+func MustNewSub(timeout time.Duration, onClose func(id string), topics ...string) *Sub {
+	if sub, err := NewSub(timeout, onClose, topics...); err == nil {
+		return sub
+	} else {
+		panic(err)
+	}
 }
 
 // Publish delivers data in a non-blocking manner to the currently waiting
