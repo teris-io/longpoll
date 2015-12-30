@@ -66,7 +66,7 @@ func TestChannel_onDuplicateTopics_uniqued(t *testing.T) {
 	}
 }
 
-func TestChannel_onNoAction_SubExpiresOnTimeout(t *testing.T) {
+func TestChannel_onNewChannel_andNoAction_expires(t *testing.T) {
 	timeout := 400 * time.Millisecond
 	tolerance := 25 * time.Millisecond
 
@@ -115,7 +115,7 @@ func TestChannel_onTimeout_handlerCalledWithCorrectId(t *testing.T) {
 	}
 }
 
-func TestChannel_onNoHandler_successOnTimeout(t *testing.T) {
+func TestChannel_onNoHandler_whenTimeout_success(t *testing.T) {
 	timeout := 400 * time.Millisecond
 	tolerance := 25 * time.Millisecond
 
@@ -133,7 +133,7 @@ func TestChannel_onNoHandler_successOnTimeout(t *testing.T) {
 	}
 }
 
-func TestChannel_onNoPublish_GetExpires_andSubExpiresLater(t *testing.T) {
+func TestChannel_onGetAndNoPublish_expiresGetAndChannel(t *testing.T) {
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond
@@ -165,7 +165,7 @@ func TestChannel_onNoPublish_GetExpires_andSubExpiresLater(t *testing.T) {
 	}
 }
 
-func TestChannel_oZeroPollTime_GetErrors(t *testing.T) {
+func TestChannel_onGet_withZeroPollTime_error(t *testing.T) {
 	timeout := 400 * time.Millisecond
 
 	ch := longpoll.MustNewChannel(timeout, nil, "any")
@@ -177,7 +177,7 @@ func TestChannel_oZeroPollTime_GetErrors(t *testing.T) {
 	}
 }
 
-func TestChannel_onDrop_givenGetWaiting_properCleanup(t *testing.T) {
+func TestChannel_onDrop_withGetWaiting_cleanup(t *testing.T) {
 	timeout := 400 * time.Millisecond
 	polltime := 200 * time.Millisecond
 	tolerance := 25 * time.Millisecond

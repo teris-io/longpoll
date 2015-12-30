@@ -10,6 +10,22 @@ import (
 	"time"
 )
 
+func TestTimeout_onNewTimeout_success(t *testing.T) {
+	t.SkipNow()
+}
+
+func TestTimeout_onNewTimeout_whenZeroDuration_error(t *testing.T) {
+	t.SkipNow()
+}
+
+func TestTimeout_onMustNewTimeout_success(t *testing.T) {
+	t.SkipNow()
+}
+
+func TestTimeout_onMustNewTimeout_whenZeroDuration_panics(t *testing.T) {
+	t.SkipNow()
+}
+
 func TestTimeout_onNoPing_expires(t *testing.T) {
 	timeout := 200 * time.Millisecond
 	tolerance := 50 * time.Millisecond

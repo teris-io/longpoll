@@ -41,23 +41,6 @@ func New() *LongPoll {
 	}
 }
 
-// Publish publishes data on all subscription channels with minimal blocking. Data is published
-// separately for each topic. Closed subscription channels and mismatching topics are ignored silently.
-func (lp *LongPoll) Publish(data interface{}, topics ...string) error {
-	if !lp.IsAlive() {
-		return errors.New("pubsub is down")
-	}
-	if len(topics) == 0 {
-		return errors.New("expected at least one topic")
-	}
-	for _, ch := range lp.Channels() {
-		for _, topic := range topics {
-			ch.Publish(data, topic) // errors ignored
-		}
-	}
-	return nil
-}
-
 // Subscribe creates a new subscription channel and returns its Id (and an error if the subscription
 // channel could not be created). The subscription channel is automatically open to publishing.
 func (lp *LongPoll) Subscribe(timeout time.Duration, topics ...string) (string, error) {
@@ -85,6 +68,23 @@ func (lp *LongPoll) MustSubscribe(timeout time.Duration, topics ...string) strin
 	}
 }
 
+// Publish publishes data on all subscription channels with minimal blocking. Data is published
+// separately for each topic. Closed subscription channels and mismatching topics are ignored silently.
+func (lp *LongPoll) Publish(data interface{}, topics ...string) error {
+	if !lp.IsAlive() {
+		return errors.New("pubsub is down")
+	}
+	if len(topics) == 0 {
+		return errors.New("expected at least one topic")
+	}
+	for _, ch := range lp.Channels() {
+		for _, topic := range topics {
+			ch.Publish(data, topic) // errors ignored
+		}
+	}
+	return nil
+}
+
 // Channel returns a pointer to the subscription channel behind the given id.
 func (lp *LongPoll) Channel(id string) (*Channel, bool) {
 	if !lp.IsAlive() {
@@ -93,7 +93,7 @@ func (lp *LongPoll) Channel(id string) (*Channel, bool) {
 	lp.mx.Lock()
 	res, ok := lp.chmap[id]
 	lp.mx.Unlock()
-	return res, ok
+	return res, ok && res.IsAlive()
 }
 
 // Channels returns the list of all currently up and running subscription channels. For performance
@@ -155,11 +155,6 @@ func (lp *LongPoll) IsAlive() bool {
 // Drop terminates a subscription channel for the given Id and removes it from
 // the list of subscription channels.
 func (lp *LongPoll) Drop(id string) {
-	if !lp.IsAlive() {
-		lp.Shutdown()
-		return
-	}
-
 	if ch, ok := lp.Channel(id); ok {
 		// channel will call lp.drop if it is alive as it was given as exit handler
 		// to be called on timeout (or any closure), however, we want to force it
@@ -206,8 +201,10 @@ func (lp *LongPoll) Topics() []string {
 
 	topics := make(map[string]bool)
 	for _, ch := range lp.Channels() {
-		for topic, _ := range ch.topics {
-			topics[topic] = true
+		if ch.IsAlive() {
+			for topic, _ := range ch.topics {
+				topics[topic] = true
+			}
 		}
 	}
 	var res []string
