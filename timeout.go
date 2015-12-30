@@ -28,8 +28,8 @@ type Timeout struct {
 
 // NewTimeout creates and starts a new timeout timer accepting an optional exit handler.
 func NewTimeout(timeout time.Duration, onTimeout func()) (*Timeout, error) {
-	if timeout == 0 {
-		return nil, errors.New("non zero timeout value expected")
+	if timeout <= 0 {
+		return nil, errors.New("positive timeout value expected")
 	}
 	tor := &Timeout{
 		alive:     yes,
