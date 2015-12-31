@@ -1,13 +1,10 @@
-[![API documentation][godocimage]][docs] [![Build status][buildimage]][travis]
-
-### Work in progress...
-
-Before first (minor) release:
-
-* `longpoll.Channel` is complete and fully tested and documented;
-* `longpoll.LongPoll` is feature complete with stable API, more testing and documentation pending.
 
 # Long polling library for the Go language
+
+[![API documentation][godocimage]][docs] [![Build status][buildimage]][travis]
+
+    go-longpoll::test
+    ok      github.com/ventu-io/go-longpoll 6.886s  coverage: 100.0% of statements
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
 long polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the

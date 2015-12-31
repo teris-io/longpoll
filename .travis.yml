@@ -2,3 +2,8 @@ language: go
 
 go:
   - tip
+
+before_install:
+  - pip install --user codecov
+after_success:
+  - codecov
