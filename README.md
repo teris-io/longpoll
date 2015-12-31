@@ -1,7 +1,7 @@
 
 # Long polling library for the Go language
 
-[![API documentation][godocimage]][docs] [![Build status][buildimage]][travis]
+[![Build status][buildimage]][travis] [![Coverage][codecovimage]][codecov] [![API documentation][godocimage]][docs]
 
     go-longpoll::test
     ok      github.com/ventu-io/go-longpoll 6.886s  coverage: 100.0% of statements
@@ -162,3 +162,6 @@ modification, are permitted provided that the [license conditions][license] are 
 [docs]: https://godoc.org/github.com/ventu-io/go-longpoll
 [demo]:    https://github.com/ventu-io/go-pubsub-examples/
 [license]: https://github.com/ventu-io/go-longpoll/blob/master/LICENSE
+
+[codecovimage]: https://codecov.io/github/ventu-io/go-longpoll/coverage.svg?branch=master
+[codecov]: https://codecov.io/github/ventu-io/go-longpoll?branch=master

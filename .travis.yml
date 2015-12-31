@@ -4,6 +4,14 @@ go:
   - tip
 
 before_install:
+  - go get
+  - touch coverage.txt
   - pip install --user codecov
+
+script:
+  - go test -cover -coverprofile=coverage.txt -covermode=atomic ./...
+
 after_success:
   - codecov
+
+
