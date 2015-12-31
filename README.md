@@ -163,8 +163,9 @@ modification, are permitted provided that the [license conditions][license] are 
 [travis]: https://travis-ci.org/ventu-io/go-longpoll
 [pubsub]: https://en.wikipedia.org/wiki/Publish–subscribe_pattern
 [docs]: https://godoc.org/github.com/ventu-io/go-longpoll
-[demo]:    https://github.com/ventu-io/go-pubsub-examples/
 [license]: https://github.com/ventu-io/go-longpoll/blob/master/LICENSE
 
 [codecovimage]: https://codecov.io/github/ventu-io/go-longpoll/coverage.svg?branch=master
 [codecov]: https://codecov.io/github/ventu-io/go-longpoll?branch=master
+
+[demo]:    https://github.com/go-examples/go-pubsub-examples/
