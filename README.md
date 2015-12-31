@@ -101,7 +101,7 @@ for {
 ```
 A comprehensive example can be run from the demo [repository][demo] via
 
-    ./go-pubsub-examples 1
+    ./longpoll 1
 
 **Long-polling on a single subscription channel:**
 
@@ -133,7 +133,7 @@ for {
 ```
 A comprehensive example can be run from the demo [repository][demo] via
 
-    ./go-pubsub-examples 2
+    ./longpoll 2
 
 ## Performance
 
@@ -144,7 +144,7 @@ Measured on conventional hardware using a benchmark in the demo [repository][dem
 implemented algorithm publisheds and concurrently receives 1 million units of data on average over
 880ms:
 
-    ./go-pubsub-examples 4
+    ./longpoll 4
 
 ## Changelog
 
@@ -168,4 +168,4 @@ modification, are permitted provided that the [license conditions][license] are 
 [codecovimage]: https://codecov.io/github/ventu-io/go-longpoll/coverage.svg?branch=master
 [codecov]: https://codecov.io/github/ventu-io/go-longpoll?branch=master
 
-[demo]:    https://github.com/go-examples/go-pubsub-examples/
+[demo]:    https://github.com/go-examples/longpoll
