@@ -210,8 +210,8 @@ func TestChannel_onDrop_withGetWaiting_cleanup(t *testing.T) {
 	if ch.IsGetWaiting() {
 		t.Errorf("unexpected get waiting")
 	}
-	if len(ch.Topics()) > 0 {
-		t.Errorf("no topics expected")
+	if len(ch.Topics()) != 2 {
+		t.Errorf("expected unchanged topics")
 	}
 	if ch.IsAlive() {
 		t.Errorf("channel unexpectedly alive")

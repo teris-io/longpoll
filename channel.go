@@ -82,6 +82,7 @@ func (ch *Channel) Publish(data interface{}, topic string) error {
 	if !ch.IsAlive() {
 		return errors.New("channel is down")
 	}
+	// no locking: read-only upon construction
 	if _, ok := ch.topics[topic]; !ok {
 		return nil
 	}
@@ -226,9 +227,8 @@ func (ch *Channel) IsAlive() bool {
 	return atomic.LoadInt32(&ch.alive) == yes
 }
 
-// Drop terminates any publishing and receiving on the channel and removes the topics (so that
-// nothing can then be published), signals the currently waiting Get request to return empty,
-// terminates the timeout timer and runs the exit handler if supplied.
+// Drop terminates any publishing and receiving on the channel, signals the currently waiting Get
+// request to return empty, terminates the timeout timer and runs the exit handler if supplied.
 func (ch *Channel) Drop() {
 	if !ch.IsAlive() {
 		return
@@ -243,8 +243,6 @@ func (ch *Channel) Drop() {
 
 		// signal timeout handler to quit
 		ch.tor.Drop()
-		// clear topics: no publishing possible
-		ch.topics = make(map[string]bool)
 		// clear data: no subscription gets anything
 		ch.data = nil
 		// let current get know that it should quit (with no data, see above)
@@ -267,12 +265,11 @@ func (ch *Channel) Id() string {
 
 // Topics returns the list of topics the channel is subscribed to.
 func (ch *Channel) Topics() []string {
-	ch.mx.Lock()
 	var res []string
+	// no locking: read-only upon construction
 	for topic, _ := range ch.topics {
 		res = append(res, topic)
 	}
-	ch.mx.Unlock()
 	return res
 }
 
