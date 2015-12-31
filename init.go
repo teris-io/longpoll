@@ -10,3 +10,5 @@ const (
 	no int32 = iota
 	yes
 )
+
+const Version = 1.0

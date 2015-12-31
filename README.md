@@ -1,10 +1,7 @@
 
-# Long polling library for the Go language
-
 [![Build status][buildimage]][travis] [![Coverage][codecovimage]][codecov] [![API documentation][godocimage]][docs]
 
-    go-longpoll::test
-    ok      github.com/ventu-io/go-longpoll 6.886s  coverage: 100.0% of statements
+# Long polling library for the Go language
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
 long polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the
@@ -138,7 +135,7 @@ A comprehensive example can be run from the demo [repository][demo] via
 
     ./go-pubsub-examples 2
 
-### Performance
+## Performance
 
 Using a benchmark from the demo [repository][demo] a throughput test can be run using the
 command below.
@@ -148,6 +145,12 @@ implemented algorithm publisheds and concurrently receives 1 million units of da
 880ms:
 
     ./go-pubsub-examples 4
+
+## Changelog
+
+#### 31 Dec 2015: Version 1.0
+
+* First release of the API
 
 ## License
 
