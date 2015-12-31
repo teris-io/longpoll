@@ -11,19 +11,38 @@ import (
 )
 
 func TestTimeout_onNewTimeout_success(t *testing.T) {
-	t.SkipNow()
+	tor, err := longpoll.NewTimeout(time.Minute, nil)
+	if err != nil {
+		t.Error("no error expected")
+	}
+	if !tor.IsAlive() {
+		t.Error("tor not alive on start")
+	}
 }
 
 func TestTimeout_onNewTimeout_whenZeroDuration_error(t *testing.T) {
-	t.SkipNow()
+	var tm time.Duration
+	_, err := longpoll.NewTimeout(tm, nil)
+	if err == nil {
+		t.Error("error expected")
+	}
 }
 
 func TestTimeout_onMustNewTimeout_success(t *testing.T) {
-	t.SkipNow()
+	tor := longpoll.MustNewTimeout(time.Minute, nil)
+	if !tor.IsAlive() {
+		t.Error("tor not alive on start")
+	}
 }
 
 func TestTimeout_onMustNewTimeout_whenZeroDuration_panics(t *testing.T) {
-	t.SkipNow()
+	var tm time.Duration
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("panic expected")
+		}
+	}()
+	longpoll.MustNewTimeout(tm, nil)
 }
 
 func TestTimeout_onNoPing_expires(t *testing.T) {
