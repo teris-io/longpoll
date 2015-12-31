@@ -82,12 +82,14 @@ func (ch *Channel) Publish(data interface{}, topic string) error {
 	if !ch.IsAlive() {
 		return errors.New("channel is down")
 	}
-	if _, ok := ch.topics[topic]; !ok {
-		return nil
-	}
 	go func() {
 		ch.mx.Lock()
 		defer ch.mx.Unlock()
+		// doing this outside of goroutine requires extra locking and slows down
+		// continuos publishing by 100%
+		if _, ok := ch.topics[topic]; !ok {
+			return
+		}
 
 		// ch could have died between the check above and entering the lock
 		if ch.IsAlive() {
