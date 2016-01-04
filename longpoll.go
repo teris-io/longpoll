@@ -1,6 +1,5 @@
-// Copyright 2015 Ventu.io. All rights reserved.
-// Use of this source code is governed by a MIT-style
-// license that can be found in the LICENSE file
+// Copyright (c) 2015 Ventu.io, Oleg Sklyar, contributors
+// The use of this source code is governed by a MIT style license found in the LICENSE file
 
 // The package longpoll provides an implementation of the long polling mechanism of the PubSub
 // pattern. Although the primary purpose of the package is to aid the development of web

@@ -1,6 +1,5 @@
-// Copyright 2015 Ventu.io. All rights reserved.
-// Use of this source code is governed by a MIT-style
-// license that can be found in the LICENSE file
+// Copyright (c) 2015 Ventu.io, Oleg Sklyar, contributors
+// The use of this source code is governed by a MIT style license found in the LICENSE file
 
 package longpoll
 
@@ -55,13 +54,12 @@ func NewChannel(timeout time.Duration, onClose func(id string), topics ...string
 	for _, topic := range topics {
 		ch.topics[topic] = true
 	}
-	tor, err := NewTimeout(timeout, ch.Drop)
-	if err == nil {
+	if tor, err := NewTimeout(timeout, ch.Drop); err == nil {
 		ch.tor = tor
 	} else {
 		return nil, err
 	}
-	log.Info("new Subscription(%v, %v, %v)", timeout, onClose, topics)
+	log.Info("new Subscription Channel(%v, %v, %v)->%v", timeout, onClose, topics, ch.id)
 	return &ch, nil
 }
 
@@ -80,7 +78,7 @@ func MustNewChannel(timeout time.Duration, onClose func(id string), topics ...st
 // information is persisted and retrieved with the data.
 func (ch *Channel) Publish(data interface{}, topic string) error {
 	if !ch.IsAlive() {
-		return errors.New("channel is down")
+		return errors.New("subscription channel is down")
 	}
 	// no locking: read-only upon construction
 	if _, ok := ch.topics[topic]; !ok {
@@ -119,7 +117,7 @@ func (ch *Channel) Publish(data interface{}, topic string) error {
 // every new incoming request will trigger a return of any earlier one.
 func (ch *Channel) Get(polltime time.Duration) (chan []interface{}, error) {
 	if !ch.IsAlive() {
-		return nil, errors.New("channel is down")
+		return nil, errors.New("subscription channel is down")
 	}
 	if polltime <= 0 {
 		return nil, errors.New("positive polltime value expected")
@@ -215,7 +213,7 @@ func (ch *Channel) onLongpollTimeoutLocking(resp chan []interface{}, notif *getn
 	defer ch.mx.Unlock()
 	// asnwer with no data
 	resp <- nil
-	log.Debug("get long poll ended empty")
+	log.Debug("get ended empty upon polltime")
 	// remove this Get from Publish notification as this Get is already processed
 	if ch.notif == notif {
 		ch.notif = nil
@@ -234,7 +232,7 @@ func (ch *Channel) Drop() {
 		return
 	}
 	atomic.StoreInt32(&ch.alive, no)
-	log.Notice("dropping subscription %v", ch.id)
+	log.Notice("dropping subscription channel %v", ch.id)
 
 	go func() {
 		// prevent any external changes to data, new subscriptions
