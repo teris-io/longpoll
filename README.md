@@ -150,7 +150,7 @@ implemented algorithm publisheds and concurrently receives 1 million units of da
 
 #### 31 Dec 2015: Version 1.0
 
-* First release of the API
+* [First release](https://github.com/ventu-io/go-longpoll/releases/tag/v1.0) of the API
 
 ## License
 
