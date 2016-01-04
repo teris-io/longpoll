@@ -1,7 +1,7 @@
 
 [![Build status][buildimage]][travis] [![Coverage][codecovimage]][codecov] [![API documentation][godocimage]][docs]
 
-# Long polling library for the Go language
+# Long polling library for Go
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
 long polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the
@@ -154,8 +154,9 @@ implemented algorithm publisheds and concurrently receives 1 million units of da
 
 ## License
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the [license conditions][license] are met.
+Copyright (c) 2015 Ventu.io, Oleg Sklyar, contributors.
+
+Distributed under a MIT style license found in the [LICENSE][license] file.
 
 [go]: https://golang.org
 [godocimage]: http://img.shields.io/badge/godoc-reference-blue.svg?style=flat
