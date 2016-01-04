@@ -1,7 +1,7 @@
 
 [![Build status][buildimage]][travis] [![Coverage][codecovimage]][codecov] [![API documentation][godocimage]][docs]
 
-# Long polling library for Go
+# Server side long polling library for Go
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
 long polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the
