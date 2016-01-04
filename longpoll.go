@@ -1,7 +1,7 @@
 // Copyright (c) 2015 Ventu.io, Oleg Sklyar, contributors
 // The use of this source code is governed by a MIT style license found in the LICENSE file
 
-// The package longpoll provides an implementation of the long polling mechanism of the PubSub
+// Package longpoll provides an implementation of the long polling mechanism of the PubSub
 // pattern. Although the primary purpose of the package is to aid the development of web
 // applications, it provides no specific web handlers and can be used in other distributed
 // applications.
@@ -46,25 +46,25 @@ func (lp *LongPoll) Subscribe(timeout time.Duration, topics ...string) (string, 
 	if !lp.IsAlive() {
 		return "", errors.New("pubsub is down")
 	}
-	if ch, err := NewChannel(timeout, lp.drop, topics...); err == nil {
+	ch, err := NewChannel(timeout, lp.drop, topics...)
+	if err == nil {
 		lp.mx.Lock()
 		lp.chcache = nil
 		lp.chmap[ch.id] = ch
 		lp.mx.Unlock()
 		return ch.id, nil
-	} else {
-		return "", err
 	}
+	return "", err
 }
 
 // MustSubscribe acts in the same manner as Subscribe, however, it does not return errors
 // and panics instead.
 func (lp *LongPoll) MustSubscribe(timeout time.Duration, topics ...string) string {
-	if id, err := lp.Subscribe(timeout, topics...); err == nil {
+	id, err := lp.Subscribe(timeout, topics...)
+	if err == nil {
 		return id
-	} else {
-		panic(err)
 	}
+	panic(err)
 }
 
 // Publish publishes data on all subscription channels with minimal blocking. Data is published
@@ -127,7 +127,7 @@ func (lp *LongPoll) Ids() []string {
 	var res []string
 	for _, ch := range lp.Channels() {
 		if ch.IsAlive() {
-			res = append(res, ch.Id())
+			res = append(res, ch.ID())
 		}
 	}
 	return res
@@ -141,9 +141,8 @@ func (lp *LongPoll) Get(id string, polltime time.Duration) (chan []interface{}, 
 	}
 	if ch, ok := lp.Channel(id); ok {
 		return ch.Get(polltime)
-	} else {
-		return nil, errors.New(fmt.Sprintf("no channel for Id %v", id))
 	}
+	return nil, fmt.Errorf("no channel for Id %v", id)
 }
 
 // IsAlive tests if the pubsub service is up and running.
@@ -158,7 +157,7 @@ func (lp *LongPoll) Drop(id string) {
 		// channel will call lp.drop if it is alive as it was given as exit handler
 		// to be called on timeout (or any closure), however, we want to force it
 		// even if channel is no more alive for any reasons:
-		lp.drop(ch.Id())
+		lp.drop(ch.ID())
 		ch.Drop()
 	}
 }
@@ -201,13 +200,13 @@ func (lp *LongPoll) Topics() []string {
 	topics := make(map[string]bool)
 	for _, ch := range lp.Channels() {
 		if ch.IsAlive() {
-			for topic, _ := range ch.topics {
+			for topic := range ch.topics {
 				topics[topic] = true
 			}
 		}
 	}
 	var res []string
-	for topic, _ := range topics {
+	for topic := range topics {
 		res = append(res, topic)
 	}
 	sort.Strings(res)

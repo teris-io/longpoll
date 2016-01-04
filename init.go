@@ -14,4 +14,5 @@ const (
 	yes
 )
 
+// Version of the library.
 const Version = 1.1

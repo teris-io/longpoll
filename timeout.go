@@ -43,11 +43,11 @@ func NewTimeout(timeout time.Duration, onTimeout func()) (*Timeout, error) {
 
 // MustNewTimeout acts just like NewTimeout, however, it does not return errors and panics instead.
 func MustNewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
-	if tor, err := NewTimeout(timeout, onTimeout); err == nil {
+	tor, err := NewTimeout(timeout, onTimeout)
+	if err == nil {
 		return tor
-	} else {
-		panic(err)
 	}
+	panic(err)
 }
 
 // Ping pings the timeout handler extending it for another timeout duration.

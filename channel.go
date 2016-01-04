@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// Sub represents a single channel for publishing and receiving data over a long-polling
+// Channel represents a single channel for publishing and receiving data over a long-polling
 // subscription. Data published to any of the topics subscribed to will be received by the client
 // asking for new data. The receiving is not split by topic.
 //
@@ -66,11 +66,11 @@ func NewChannel(timeout time.Duration, onClose func(id string), topics ...string
 // MustNewChannel acts just like NewChannel, however, it does not return
 // errors and panics instead.
 func MustNewChannel(timeout time.Duration, onClose func(id string), topics ...string) *Channel {
-	if ch, err := NewChannel(timeout, onClose, topics...); err == nil {
+	ch, err := NewChannel(timeout, onClose, topics...)
+	if err == nil {
 		return ch
-	} else {
-		panic(err)
 	}
+	panic(err)
 }
 
 // Publish publishes data on the channel in a non-blocking manner if the topic corresponds to one of
@@ -188,9 +188,8 @@ func (ch *Channel) onDataWaiting(resp chan []interface{}) bool {
 		// thus no getnotifier for Publish
 		ch.notif = nil
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 func (ch *Channel) onNewDataLocking(resp chan []interface{}, notif *getnotifier) {
@@ -256,8 +255,8 @@ func (ch *Channel) Drop() {
 	}()
 }
 
-// Id returns the channel/subscription Id assigned at construction.
-func (ch *Channel) Id() string {
+// ID returns the channel/subscription Id assigned at construction.
+func (ch *Channel) ID() string {
 	return ch.id
 }
 
@@ -265,7 +264,7 @@ func (ch *Channel) Id() string {
 func (ch *Channel) Topics() []string {
 	var res []string
 	// no locking: read-only upon construction
-	for topic, _ := range ch.topics {
+	for topic := range ch.topics {
 		res = append(res, topic)
 	}
 	return res

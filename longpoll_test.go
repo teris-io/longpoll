@@ -129,7 +129,7 @@ func TestLongPoll_onChannel_success(t *testing.T) {
 	if !ok {
 		t.Error("channel expected")
 	}
-	if id != ch.Id() {
+	if id != ch.ID() {
 		t.Error("wrong id")
 	}
 }

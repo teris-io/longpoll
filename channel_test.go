@@ -109,7 +109,7 @@ func TestChannel_onTimeout_handlerCalledWithCorrectId(t *testing.T) {
 	defer ch.Drop()
 
 	time.Sleep(timeout + tolerance)
-	if idx != ch.Id() {
+	if idx != ch.ID() {
 		t.Errorf("no or incorrect channel id in onClose handler")
 	}
 }
