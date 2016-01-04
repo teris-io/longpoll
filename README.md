@@ -1,5 +1,5 @@
 
-[![Build status][buildimage]][travis] [![Coverage][codecovimage]][codecov] [![API documentation][godocimage]][docs]
+[![Build status][buildimage]][travis] [![Coverage][codecovimage]][codecov] [![GoReportCard][goreportcardimage]][goreportcard] [![API documentation][godocimage]][docs]
 
 # Server side long polling library for Go
 
@@ -170,3 +170,6 @@ Distributed under a MIT style license found in the [LICENSE][license] file.
 [codecov]: https://codecov.io/github/ventu-io/go-longpoll?branch=master
 
 [demo]:    https://github.com/go-examples/longpoll
+
+[goreportcard]: http://goreportcard.com/report/ventu-io/go-longpoll
+[goreportcardimage]: https://img.shields.io/badge/goreportcard-A%2B-brightgreen.svg
