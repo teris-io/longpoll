@@ -1,10 +1,10 @@
 
 [![Build status][buildimage]][travis] [![Coverage][codecovimage]][codecov] [![GoReportCard][goreportcardimage]][goreportcard] [![API documentation][godocimage]][docs]
 
-# Server side long polling library for Go
+# PubSub with long polling in Go
 
 The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
-long polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the
+long-polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the
 library is to aid the development of web applications, the library provides no specific web
 handlers and  can be used in other distributed applications.
 
@@ -15,11 +15,11 @@ other distributed applications.
 Clients initiate subscriptions to the server specifying topics they are interested in. Given a
 subscription Id a client makes a request for new data. The request is held open until data becomes
 available on the server (published to a matching topic). As soon as this happens the request is
-answered immediately. If no data arrives over a predefined time window (the long polling interval)
+answered immediately. If no data arrives over a predefined time window (the long-polling interval)
 the request returns empty. A new connection is then established between the client and the server
 to receive further updates.
 
-The following points are often listed as the benefits of long polling over the push mechanism in web
+The following points are often listed as the benefits of long-polling over the push mechanism in web
 applications:
 
 * does not require a persistent connection to the server
@@ -50,10 +50,10 @@ Subscriptions will timeout and get closed if no client request is received over 
 interval. Every request resets the timeout counter. The timeout interval is a property of the
 subscription itself and different subscriptions may have different timeout intervals.
 
-The long polling interval, within which the request is held, is specified per request. Web
+The long-polling interval, within which the request is held, is specified per request. Web
 application wrappers might provide defaults.
 
-The library supports concurrent long polling requests on the same subscription Id, but no data will
+The library supports concurrent long-polling requests on the same subscription Id, but no data will
 be duplicated across request responses. No specific distribution of data across responses is
 guaranteed: new requests signal the existing one to return immediately.
 
@@ -63,7 +63,7 @@ subscribers. All the published data is stored in memory of the backend.
 
 **Long-polling with subscription management:**
 
-Handling of long polling subscriptions, publishing and receiving data is done by the
+Handling of long-polling subscriptions, publishing and receiving data is done by the
 `longpoll.LongPoll` type:
 
 ```go
@@ -105,7 +105,7 @@ A comprehensive example can be run from the demo [repository][demo] via
 
 **Long-polling on a single subscription channel:**
 
-Handling of single-channel long polling pubsub is done by the `longpoll.Sub` type:
+Handling of the single-channel long-polling pubsub is done by the `longpoll.Sub` type:
 
 ```go
 ch := longpoll.MustNewChannel(time.Minute, func (id string) {
