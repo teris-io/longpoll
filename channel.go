@@ -5,7 +5,7 @@ package longpoll
 
 import (
 	"errors"
-	"github.com/satori/go.uuid"
+	"github.com/ventu-io/go-shortid"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -45,8 +45,12 @@ func NewChannel(timeout time.Duration, onClose func(id string), topics ...string
 	if len(topics) == 0 {
 		return nil, errors.New("at least one topic expected")
 	}
+	id, err := shortid.Generate()
+	if err != nil {
+		return nil, err
+	}
 	ch := Channel{
-		id:      uuid.NewV4().String(),
+		id:      id,
 		onClose: onClose,
 		topics:  make(map[string]bool),
 		alive:   yes,

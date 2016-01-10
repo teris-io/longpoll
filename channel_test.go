@@ -20,6 +20,9 @@ func TestChannel_onNewChannel_active(t *testing.T) {
 	if !ch.IsAlive() {
 		t.Error("channel down on construction")
 	}
+	if len(ch.ID()) < 9 || len(ch.ID()) > 11 {
+		t.Error("expected an Id from go-shortid")
+	}
 }
 
 func TestChannel_onMustNewChannel_active(t *testing.T) {

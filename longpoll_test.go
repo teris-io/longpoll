@@ -34,7 +34,7 @@ func TestLongPoll_onSubscribe_success(t *testing.T) {
 	if err2 != nil {
 		t.Error("expected no errors on creation")
 	}
-	if id1 == id2 || len(id1) != 36 || len(id2) != 36 {
+	if id1 == id2 || len(id1) < 9 || len(id1) > 11 || len(id2) < 9 || len(id2) > 11 {
 		t.Error("incorrect ids")
 	}
 }
@@ -44,7 +44,7 @@ func TestLongPoll_onMustSubscribe_success(t *testing.T) {
 	defer ps.Shutdown()
 	id1 := ps.MustSubscribe(time.Minute, "A", "B")
 	id2 := ps.MustSubscribe(time.Minute, "A", "B")
-	if id1 == id2 || len(id1) != 36 || len(id2) != 36 {
+	if id1 == id2 || len(id1) < 9 || len(id1) > 11 || len(id2) < 9 || len(id2) > 11 {
 		t.Error("incorrect ids")
 	}
 }
