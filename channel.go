@@ -138,12 +138,19 @@ func (ch *Channel) Get(polltime time.Duration) (chan []interface{}, error) {
 			return
 		}
 		logger().Debug("incoming get request")
+		// notify existing Get to terminate immediately (will wait for lock)
+		if ch.notif != nil && !ch.notif.pinged {
+			ch.notif.pinged = true
+			ch.notif.ping <- true
+		}
+
+		// ch.notif is reset either here, ...
 		if ch.onDataWaiting(resp) {
 			ch.mx.Unlock()
 			return
 		}
 
-		// prevent existing Get receive any new data and set this one to be notified by Publish
+		// ...or here. Set this one to be notified by Publish
 		notif := &getnotifier{ping: make(chan bool, 1), pinged: false}
 		ch.notif = notif
 		ch.mx.Unlock()
