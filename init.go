@@ -3,6 +3,8 @@
 
 package longpoll
 
+import "github.com/ventu-io/go-log-interface"
+
 const (
 	no int32 = iota
 	yes
@@ -10,3 +12,7 @@ const (
 
 // Version of the library.
 const Version = 1.1
+
+func logger() log.Logger {
+	return log.GetLogger("longpoll")
+}

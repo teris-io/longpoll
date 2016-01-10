@@ -8,5 +8,5 @@ import (
 )
 
 func init() {
-	log.GetLogger("longpoll").SetLevel(log.DEBUG)
+	log.GetLogger("longpoll").SetLevel(log.ERROR)
 }
