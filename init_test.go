@@ -4,18 +4,9 @@
 package longpoll_test
 
 import (
-	"github.com/op/go-logging"
-	"os"
+	"github.com/ventu-io/go-log-interface"
 )
 
-var log = logging.MustGetLogger("longpoll_test")
-
 func init() {
-	backend := logging.NewLogBackend(os.Stderr, "", 0)
-	leveled := logging.AddModuleLevel(backend)
-	leveled.SetLevel(logging.DEBUG, "")
-	logging.SetBackend(leveled)
-
-	format := logging.MustStringFormatter("%{color}%{time:15:04:05.000} %{longfunc}: %{level:.6s}%{color:reset} %{message}")
-	logging.SetFormatter(format)
+	log.GetLogger("longpoll").SetLevel(log.DEBUG)
 }
