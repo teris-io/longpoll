@@ -151,8 +151,8 @@ implemented algorithm publisheds and concurrently receives 1 million units of da
 #### current master
 
 * Switched to https://github.com/ventu-io/slf (structured logging facade)
-  for logging. This library does not bind any SLF implementation, just uses 
-  the interface.
+  for logging (no logging output until an SLF configuration is applied by 
+  an application using the library).
 * Incoming get will terminate any pending one for the same subscription 
   immediately (if issued concurrently).
 * Using https://github.com/ventu-io/go-shortid instead of UUID.v4.
