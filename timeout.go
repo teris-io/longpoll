@@ -5,6 +5,7 @@ package longpoll
 
 import (
 	"errors"
+	"github.com/ventu-io/slf"
 	"sync/atomic"
 	"time"
 )
@@ -35,7 +36,10 @@ func NewTimeout(timeout time.Duration, onTimeout func()) (*Timeout, error) {
 		report:    make(chan bool, 1),
 		onTimeout: onTimeout,
 	}
-	logger().Info("new Timeout(%v, %v)", timeout, onTimeout)
+	logger.WithFields(slf.Fields{
+		"timeout":   timeout,
+		"onTimeout": onTimeout,
+	}).Info("new timeout")
 	tor.Ping()
 	go tor.handle(int64(timeout))
 	return tor, nil
@@ -54,7 +58,7 @@ func MustNewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
 func (tor *Timeout) Ping() {
 	if tor.IsAlive() {
 		atomic.StoreInt64(&tor.lastping, tor.now())
-		logger().Debug("timeout pinged")
+		slf.WithContext("longpoll-timeout").Debug("timeout pinged")
 	}
 }
 
@@ -69,7 +73,7 @@ func (tor *Timeout) ReportChan() chan bool {
 // onTimeout handler will not get called.
 func (tor *Timeout) Drop() {
 	atomic.StoreInt32(&tor.alive, no)
-	logger().Debug("timeout dropped")
+	logger.Debug("timeout dropped")
 }
 
 // IsAlive verifies if the timeout handler is up and running.
@@ -78,20 +82,20 @@ func (tor *Timeout) IsAlive() bool {
 }
 
 func (tor *Timeout) handle(timeout int64) {
-	logger().Debug("handler started")
+	logger.Debug("handler started")
 	hundredth := timeout / 100
 	for tor.elapsed() < timeout && tor.IsAlive() {
 		time.Sleep(time.Duration(hundredth))
 	}
 	if tor.IsAlive() {
 		atomic.StoreInt32(&tor.alive, no)
-		logger().Warn("timeout detected")
+		logger.Warn("timeout detected")
 		if tor.onTimeout != nil {
-			logger().Debug("calling onTimeout handler")
+			logger.Debug("calling onTimeout handler")
 			go tor.onTimeout()
 		}
 	}
-	logger().Debug("reporting exit on channel")
+	logger.Debug("reporting exit on channel")
 	tor.report <- true
 }
 

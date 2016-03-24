@@ -6,6 +6,7 @@ package longpoll
 import (
 	"errors"
 	"github.com/ventu-io/go-shortid"
+	"github.com/ventu-io/slf"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -63,7 +64,12 @@ func NewChannel(timeout time.Duration, onClose func(id string), topics ...string
 	} else {
 		return nil, err
 	}
-	logger().Info("new Subscription Channel(%v, %v, %v)->%v", timeout, onClose, topics, ch.id)
+	logger.WithFields(slf.Fields{
+		"id":      ch.id,
+		"topics":  topics,
+		"timeout": timeout,
+		"onClose": onClose,
+	}).Info("new subscription channel")
 	return &ch, nil
 }
 
@@ -137,7 +143,7 @@ func (ch *Channel) Get(polltime time.Duration) (chan []interface{}, error) {
 			ch.mx.Unlock()
 			return
 		}
-		logger().Debug("incoming get request")
+		logger.Debug("incoming get request")
 		// notify existing Get to terminate immediately (will wait for lock)
 		if ch.notif != nil && !ch.notif.pinged {
 			ch.notif.pinged = true
@@ -192,11 +198,11 @@ func (ch *Channel) onDataWaiting(resp chan []interface{}) bool {
 		// answer with currently waiting data
 		resp <- ch.data
 		ndata := len(ch.data)
-		logger().Debug("get received %v data objects", ndata)
+		logger.WithField("objects", ndata).Debug("sending data to waiting get")
 		// remove data as it is already sent back
 		ch.data = nil
 		// earlier Get should get nothing, this one comes back with data immediately,
-		// thus no getnotifier for Publish
+		// thus no get notifier for Publish
 		ch.notif = nil
 		return true
 	}
@@ -209,7 +215,7 @@ func (ch *Channel) onNewDataLocking(resp chan []interface{}, notif *getnotifier)
 	// answer with currently waiting data
 	resp <- ch.data
 	ndata := len(ch.data)
-	logger().Debug("get received %v data objects", ndata)
+	logger.WithField("objects", ndata).Debug("sending data to waiting get")
 	// remove data as it is already sent back
 	ch.data = nil
 	// remove this Get from Publish notification as this Get is already processed
@@ -223,7 +229,7 @@ func (ch *Channel) onLongpollTimeoutLocking(resp chan []interface{}, notif *getn
 	defer ch.mx.Unlock()
 	// asnwer with no data
 	resp <- nil
-	logger().Debug("get ended empty upon polltime")
+	logger.Debug("get ended empty upon polltime")
 	// remove this Get from Publish notification as this Get is already processed
 	if ch.notif == notif {
 		ch.notif = nil
@@ -242,7 +248,7 @@ func (ch *Channel) Drop() {
 		return
 	}
 	atomic.StoreInt32(&ch.alive, no)
-	logger().Warn("dropping subscription channel %v", ch.id)
+	logger.WithField("id", ch.id).Warn("dropping subscription channel")
 
 	go func() {
 		// prevent any external changes to data, new subscriptions
