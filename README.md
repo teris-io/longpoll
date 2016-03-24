@@ -148,13 +148,22 @@ implemented algorithm publisheds and concurrently receives 1 million units of da
 
 ## Changelog
 
+#### current master
+
+* Switched to https://github.com/ventu-io/slf (structured logging facade)
+  for logging. This library does not bind any SLF implementation, just uses 
+  the interface.
+* Incoming get will terminate any pending one for the same subscription 
+  immediately (if issued concurrently).
+* Using https://github.com/ventu-io/go-shortid instead of UUID.v4.
+
 #### 31 Dec 2015: Version 1.0
 
 * [First release](https://github.com/ventu-io/go-longpoll/releases/tag/v1.0) of the API
 
 ## License
 
-Copyright (c) 2015 Ventu.io, Oleg Sklyar, contributors.
+Copyright (c) 2015-2016 Ventu.io, Oleg Sklyar, contributors.
 
 Distributed under a MIT style license found in the [LICENSE][license] file.
 
