@@ -14,10 +14,19 @@ package longpoll
 import (
 	"errors"
 	"fmt"
+	"github.com/ventu-io/slf"
 	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
+)
+
+// Version of the library.
+const Version = 1.2
+
+const (
+	no int32 = iota
+	yes
 )
 
 // The LongPoll type represents a subscription manager. It provides functionality to manage multiple
@@ -30,13 +39,15 @@ type LongPoll struct {
 	// performance optimisation: channel list cache between updates to avoid reconstructing it
 	// from chmap values and unlocking the thread ASAP. Reset to nil on any alterations to chmap
 	chcache []*Channel
+	logger  slf.StructuredLogger
 }
 
 // New creates a new long-polling subscription manager.
 func New() *LongPoll {
 	return &LongPoll{
-		chmap: make(map[string]*Channel),
-		alive: yes,
+		chmap:  make(map[string]*Channel),
+		alive:  yes,
+		logger: slf.WithContext("longpoll"),
 	}
 }
 
