@@ -4,10 +4,11 @@
 package longpoll_test
 
 import (
-	"github.com/teris-io/longpoll"
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/teris-io/longpoll"
 )
 
 func TestChannel_onNewChannel_active(t *testing.T) {

@@ -4,9 +4,10 @@
 package longpoll_test
 
 import (
-	"github.com/teris-io/longpoll"
 	"testing"
 	"time"
+
+	"github.com/teris-io/longpoll"
 )
 
 func TestLongPoll_newFunctionWithStruct_inactive(t *testing.T) {

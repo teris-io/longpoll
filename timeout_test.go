@@ -4,9 +4,10 @@
 package longpoll_test
 
 import (
-	"github.com/teris-io/longpoll"
 	"testing"
 	"time"
+
+	"github.com/teris-io/longpoll"
 )
 
 func TestTimeout_onNewTimeout_success(t *testing.T) {

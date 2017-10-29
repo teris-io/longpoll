@@ -5,7 +5,6 @@ package longpoll
 
 import (
 	"errors"
-	"github.com/ventu-io/slf"
 	"sync/atomic"
 	"time"
 )
