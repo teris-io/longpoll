@@ -5,11 +5,11 @@ package longpoll
 
 import (
 	"errors"
+	"github.com/teris-io/shortid"
 	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
-	"github.com/teris-io/shortid"
 )
 
 // Channel represents a single channel for publishing and receiving data over a long-polling

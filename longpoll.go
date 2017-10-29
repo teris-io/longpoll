@@ -43,8 +43,8 @@ type LongPoll struct {
 // New creates a new long-polling subscription manager.
 func New() *LongPoll {
 	return &LongPoll{
-		chmap:  make(map[string]*Channel),
-		alive:  yes,
+		chmap: make(map[string]*Channel),
+		alive: yes,
 	}
 }
 
