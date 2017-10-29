@@ -1,12 +1,12 @@
-// Copyright (c) 2015 Ventu.io, Oleg Sklyar, contributors
-// The use of this source code is governed by a MIT style license found in the LICENSE file
+// Copyright (c) 2015-2017. Oleg Sklyar & teris.io. All rights reserved.
+// See the LICENSE file in the project root for licensing information.
 
 package longpoll_test
 
 import (
-	"github.com/ventu-io/go-longpoll"
 	"testing"
 	"time"
+	"github.com/teris-io/longpoll"
 )
 
 func TestLongPoll_newFunctionWithStruct_inactive(t *testing.T) {

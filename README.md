@@ -1,10 +1,9 @@
+[![Build status][buildimage]][build] [![Coverage][codecovimage]][codecov] [![GoReportCard][cardimage]][card] [![API documentation][docsimage]][docs]
 
-[![Build status][buildimage]][travis] [![Coverage][codecovimage]][codecov] [![GoReportCard][goreportcardimage]][goreportcard] [![API documentation][godocimage]][docs]
+# Parked: PubSub with long polling in Go
 
-# PubSub with long polling in Go
-
-The [Go][go] library `go-longpoll` (package `longpoll`) provides an implementation of the
-long-polling mechanism of the [PubSub][pubsub] pattern. Although the primary purpose of the
+The package `longpoll` provides an implementation of the
+long-polling mechanism of the PubSub pattern. Although the primary purpose of the
 library is to aid the development of web applications, the library provides no specific web
 handlers and  can be used in other distributed applications.
 
@@ -27,24 +26,8 @@ applications:
 maybe in large chunks which are accumulated at the server between requests
 * friendly to proxies blocking streaming
 
-The library can be installed by one of the following methods:
-
-* using `go get`
-
-	```
-	go get github.com/ventu-io/go-longpoll
-	```
-
-* via cloning this repository:
-
-	```
-	git clone git@github.com:ventu-io/go-longpoll.git ${GOPATH}/src/github.com/ventu-io/go-longpoll
-	```
 
 ## Implementation details and examples
-
-The API documentation is available at [GoDocs][docs]. The following demo [repository][demo]
-provides multiple examples and benchmarks for this library.
 
 Subscriptions will timeout and get closed if no client request is received over a given timeout
 interval. Every request resets the timeout counter. The timeout interval is a property of the
@@ -99,9 +82,6 @@ for {
 	time.Sleep(time.Duration(rand.Intn(5e10)))
 }
 ```
-A comprehensive example can be run from the demo [repository][demo] via
-
-    ./longpoll 1
 
 **Long-polling on a single subscription channel:**
 
@@ -131,54 +111,20 @@ for {
 	time.Sleep(time.Duration(rand.Intn(5e10)))
 }
 ```
-A comprehensive example can be run from the demo [repository][demo] via
 
-    ./longpoll 2
+### License and copyright
 
-## Performance
+	Copyright (c) 2015-2017. Oleg Sklyar and teris.io. MIT license applies. All rights reserved.
 
-Using a benchmark from the demo [repository][demo] a throughput test can be run using the
-command below.
 
-Measured on conventional hardware using a benchmark in the demo [repository][demo], the
-implemented algorithm publisheds and concurrently receives 1 million units of data on average over
-880ms:
+[build]: https://travis-ci.org/teris-io/logpoll
+[buildimage]: https://travis-ci.org/teris-io/logpoll.svg?branch=master
 
-    ./longpoll 4
+[codecov]: https://codecov.io/github/teris-io/logpoll?branch=master
+[codecovimage]: https://codecov.io/github/teris-io/logpoll/coverage.svg?branch=master
 
-## Changelog
+[card]: http://goreportcard.com/report/teris-io/logpoll
+[cardimage]: https://goreportcard.com/badge/github.com/teris-io/logpoll
 
-#### current master
-
-* Switched to https://github.com/ventu-io/slf (structured logging facade)
-  for logging (no logging output until an SLF configuration is applied by 
-  an application using the library).
-* Incoming get will terminate any pending one for the same subscription 
-  immediately (if issued concurrently).
-* Using https://github.com/ventu-io/go-shortid instead of UUID.v4.
-
-#### 31 Dec 2015: Version 1.0
-
-* [First release](https://github.com/ventu-io/go-longpoll/releases/tag/v1.0) of the API
-
-## License
-
-Copyright (c) 2015-2016 Ventu.io, Oleg Sklyar, contributors.
-
-Distributed under a MIT style license found in the [LICENSE][license] file.
-
-[go]: https://golang.org
-[godocimage]: http://img.shields.io/badge/godoc-reference-blue.svg?style=flat
-[buildimage]: https://travis-ci.org/ventu-io/go-longpoll.svg?branch=master
-[travis]: https://travis-ci.org/ventu-io/go-longpoll
-[pubsub]: https://en.wikipedia.org/wiki/Publish–subscribe_pattern
-[docs]: https://godoc.org/github.com/ventu-io/go-longpoll
-[license]: https://github.com/ventu-io/go-longpoll/blob/master/LICENSE
-
-[codecovimage]: https://codecov.io/github/ventu-io/go-longpoll/coverage.svg?branch=master
-[codecov]: https://codecov.io/github/ventu-io/go-longpoll?branch=master
-
-[demo]:    https://github.com/go-examples/longpoll
-
-[goreportcard]: http://goreportcard.com/report/ventu-io/go-longpoll
-[goreportcardimage]: https://img.shields.io/badge/goreportcard-A%2B-brightgreen.svg
+[docs]: https://godoc.org/github.com/teris-io/logpoll
+[docsimage]: http://img.shields.io/badge/godoc-reference-blue.svg?style=flat
