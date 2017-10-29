@@ -14,7 +14,6 @@ package longpoll
 import (
 	"errors"
 	"fmt"
-	"github.com/ventu-io/slf"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -39,7 +38,6 @@ type LongPoll struct {
 	// performance optimisation: channel list cache between updates to avoid reconstructing it
 	// from chmap values and unlocking the thread ASAP. Reset to nil on any alterations to chmap
 	chcache []*Channel
-	logger  slf.StructuredLogger
 }
 
 // New creates a new long-polling subscription manager.
@@ -47,7 +45,6 @@ func New() *LongPoll {
 	return &LongPoll{
 		chmap:  make(map[string]*Channel),
 		alive:  yes,
-		logger: slf.WithContext("longpoll"),
 	}
 }
 

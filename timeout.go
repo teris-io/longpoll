@@ -24,7 +24,6 @@ type Timeout struct {
 	alive     int32
 	report    chan bool
 	onTimeout func()
-	logger    slf.StructuredLogger
 }
 
 // NewTimeout creates and starts a new timeout timer accepting an optional exit handler.
@@ -32,17 +31,11 @@ func NewTimeout(timeout time.Duration, onTimeout func()) (*Timeout, error) {
 	if timeout <= 0 {
 		return nil, errors.New("positive timeout value expected")
 	}
-	logger := slf.WithContext("longpoll.timeout")
 	tor := &Timeout{
 		alive:     yes,
 		report:    make(chan bool, 1),
 		onTimeout: onTimeout,
-		logger:    logger,
 	}
-	logger.WithFields(slf.Fields{
-		"timeout":   timeout,
-		"onTimeout": onTimeout,
-	}).Info("new timeout")
 	tor.Ping()
 	go tor.handle(int64(timeout))
 	return tor, nil
@@ -61,7 +54,6 @@ func MustNewTimeout(timeout time.Duration, onTimeout func()) *Timeout {
 func (tor *Timeout) Ping() {
 	if tor.IsAlive() {
 		atomic.StoreInt64(&tor.lastping, tor.now())
-		slf.WithContext("longpoll-timeout").Debug("timeout pinged")
 	}
 }
 
@@ -76,7 +68,6 @@ func (tor *Timeout) ReportChan() chan bool {
 // onTimeout handler will not get called.
 func (tor *Timeout) Drop() {
 	atomic.StoreInt32(&tor.alive, no)
-	tor.logger.Debug("timeout dropped")
 }
 
 // IsAlive verifies if the timeout handler is up and running.
@@ -85,20 +76,16 @@ func (tor *Timeout) IsAlive() bool {
 }
 
 func (tor *Timeout) handle(timeout int64) {
-	tor.logger.Debug("handler started")
 	hundredth := timeout / 100
 	for tor.elapsed() < timeout && tor.IsAlive() {
 		time.Sleep(time.Duration(hundredth))
 	}
 	if tor.IsAlive() {
 		atomic.StoreInt32(&tor.alive, no)
-		tor.logger.Warn("timeout detected")
 		if tor.onTimeout != nil {
-			tor.logger.Debug("calling onTimeout handler")
 			go tor.onTimeout()
 		}
 	}
-	tor.logger.Debug("reporting exit on channel")
 	tor.report <- true
 }
 

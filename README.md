@@ -117,14 +117,14 @@ for {
 	Copyright (c) 2015-2017. Oleg Sklyar and teris.io. MIT license applies. All rights reserved.
 
 
-[build]: https://travis-ci.org/teris-io/logpoll
-[buildimage]: https://travis-ci.org/teris-io/logpoll.svg?branch=master
+[build]: https://travis-ci.org/teris-io/longpoll
+[buildimage]: https://travis-ci.org/teris-io/longpoll.svg?branch=master
 
-[codecov]: https://codecov.io/github/teris-io/logpoll?branch=master
-[codecovimage]: https://codecov.io/github/teris-io/logpoll/coverage.svg?branch=master
+[codecov]: https://codecov.io/github/teris-io/longpoll?branch=master
+[codecovimage]: https://codecov.io/github/teris-io/longpoll/coverage.svg?branch=master
 
-[card]: http://goreportcard.com/report/teris-io/logpoll
-[cardimage]: https://goreportcard.com/badge/github.com/teris-io/logpoll
+[card]: http://goreportcard.com/report/teris-io/longpoll
+[cardimage]: https://goreportcard.com/badge/github.com/teris-io/longpoll
 
-[docs]: https://godoc.org/github.com/teris-io/logpoll
+[docs]: https://godoc.org/github.com/teris-io/longpoll
 [docsimage]: http://img.shields.io/badge/godoc-reference-blue.svg?style=flat
