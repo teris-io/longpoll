@@ -55,31 +55,31 @@ id1, _ := ps.Subscribe(time.Minute, "TopicA", "TopicB")
 id2, _ := ps.Subscribe(time.Minute, "TopicB", "TopicC")
 
 go func() {
-	for {
-		if datach, err := ps.Get(id1, 30*time.Second); err == nil {
-			fmt.Printf("%v received %v", id1, <-datach)
-		} else {
-			break
-		}
-	}
+  for {
+    if datach, err := ps.Get(id1, 30*time.Second); err == nil {
+      fmt.Printf("%v received %v", id1, <-datach)
+    } else {
+      break
+    }
+  }
 }()
 
 go func() {
-	for {
-		if datach, err := ps.Get(id2, 20*time.Second); err == nil {
-			fmt.Printf("%v received %v", id2, <-datach)
-		} else {
-			break
-		}
-	}
+  for {
+    if datach, err := ps.Get(id2, 20*time.Second); err == nil {
+      fmt.Printf("%v received %v", id2, <-datach)
+    } else {
+      break
+    }
+  }
 }()
 
 for {
-	// data published on TopicB will be received by id1 and id2, TopicC by id2 only
-	ps.Publish({"random": rand.Float64()}, "TopicB", "TopicC")
+  // data published on TopicB will be received by id1 and id2, TopicC by id2 only
+  ps.Publish({"random": rand.Float64()}, "TopicB", "TopicC")
 
-	// sleep for up to 50s
-	time.Sleep(time.Duration(rand.Intn(5e10)))
+  // sleep for up to 50s
+  time.Sleep(time.Duration(rand.Intn(5e10)))
 }
 ```
 
@@ -89,26 +89,26 @@ Handling of the single-channel long-polling pubsub is done by the `longpoll.Sub`
 
 ```go
 ch := longpoll.MustNewChannel(time.Minute, func (id string) {
-	// action on exit
+  // action on exit
 }, "TopicA", "TopicB")
 
 go func() {
-	for {
-		if datach, err := ch.Get(20*time.Second); err == nil {
-			fmt.Printf("received %v", <-datach)
-		} else {
-			break
-		}
-	}
+  for {
+    if datach, err := ch.Get(20*time.Second); err == nil {
+      fmt.Printf("received %v", <-datach)
+    } else {
+      break
+    }
+  }
 }()
 
 for {
-	ch.Publish({"random": rand.Float64()}, "TopicB")
-	// above subscription will not receive this data
-	ch.Publish({"random": rand.Float64()}, "TopicC")
+  ch.Publish({"random": rand.Float64()}, "TopicB")
+  // above subscription will not receive this data
+  ch.Publish({"random": rand.Float64()}, "TopicC")
 
-	// sleep for up to 50s
-	time.Sleep(time.Duration(rand.Intn(5e10)))
+  // sleep for up to 50s
+  time.Sleep(time.Duration(rand.Intn(5e10)))
 }
 ```
 
